@@ -1,0 +1,21 @@
+---
+
+language: python
+python:
+  - 3
+
+services:
+  - docker
+
+before_install:
+  - pip install poetry
+
+install:
+  - poetry install --no-root
+
+script:
+  - coverage run -m unittest discover -v -s shinobi/tests
+
+after_success:
+  - coverage combine -a
+  - coverage report
