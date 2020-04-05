@@ -9,6 +9,7 @@ services:
 
 before_install:
   - pip install poetry
+  - pip install codecov
 
 install:
   - poetry install --no-root --extras "shinobi-controller"
@@ -19,3 +20,4 @@ script:
 after_success:
   - coverage combine -a
   - coverage report
+  - codecov
