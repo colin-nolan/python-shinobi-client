@@ -8,16 +8,39 @@ from logzero import logger
 
 class ShinobiUserOrm:
     """
-    TODO
+    Shinobi user ORM.
     """
     SUPPORTED_MODIFIABLE_PROPERTIES = {"password"}
 
+    @staticmethod
+    def _create_improved_user_entry(user: Dict) -> Dict:
+        """
+        Creates a copy of the given user details with extra information.
+        :param user: user details to improve
+        :return: improved user details
+        """
+        user = deepcopy(user)
+        user["email"] = user["mail"]
+        return user
+
+    @staticmethod
+    def _raise_if_errors(shinobi_response: Response):
+        """
+        Raises an exception if the response from Shinobi indicated there were errors.
+        :param shinobi_response: the response from Shinobi
+        """
+        shinobi_response.raise_for_status()
+        json_response = shinobi_response.json()
+        if not json_response["ok"]:
+            # Yes, the API returns a non-400 when everything is not ok...
+            raise RuntimeError(json_response["msg"])
+
     def __init__(self, host: str, port: int, super_user_token: str):
         """
-        TODO
-        :param host:
-        :param port:
-        :param super_user_token:
+        Constructor.
+        :param host: location of the Shinboi host
+        :param port: port Shinobi is running on
+        :param super_user_token: a Shinobi super-user token
         """
         self.host = host
         self.port = port
@@ -25,36 +48,36 @@ class ShinobiUserOrm:
 
     def get(self, email: str) -> Optional[Dict]:
         """
-        TODO
-        :param email:
-        :return:
+        Gets details about the user with the given email address.
+        :param email: user's email address
+        :return: details about user else `None` if the user does not exist
         """
         # XXX: For some reason, Shinobi doesn't have an endpoint to query an individual user
         users = self.get_all()
         matched_users = tuple(filter(lambda user: user["mail"] == email, users))
         assert len(matched_users) <= 1, f"More than one user found with the email address: {email}"
         if len(matched_users) == 1:
-            return self._create_improved_user_entry(matched_users[0])
+            return ShinobiUserOrm._create_improved_user_entry(matched_users[0])
         else:
             return None
 
     def get_all(self) -> Tuple:
         """
-        TODO
-        :return:
+        Gets details about all users.
+        :return: tuple where each element contains details about a specific user
         """
         response = requests.get(
             f"http://{self.host}:{self.port}/super/{self.super_user_token}/accounts/list")
-        self._raise_if_errors(response)
-        return  tuple(self._create_improved_user_entry(user) for user in response.json()["users"])
+        ShinobiUserOrm._raise_if_errors(response)
+        return tuple(ShinobiUserOrm._create_improved_user_entry(user) for user in response.json()["users"])
 
-    def create(self, email: str, password: str, verify_create: bool = True) -> Dict:
+    def create(self, email: str, password: str, verify_create: bool = False) -> Dict:
         """
-        TODO
-        :param email:
-        :param password:
-        :param verify_create:
-        :return:
+        Creates a user with the given details.
+        :param email: email address of the user
+        :param password: password for the user
+        :param verify_create: whether to verify that the user has been successfully created
+        :return: details about created user
         """
         # Not trusting Shinobi's API to give back anything useful if the user already exists
         if self.get(email):
@@ -77,21 +100,21 @@ class ShinobiUserOrm:
         response = requests.post(
             f"http://{self.host}:{self.port}/super/{self.super_user_token}/accounts/registerAdmin",
             json=dict(data=data))
-        self._raise_if_errors(response)
+        ShinobiUserOrm._raise_if_errors(response)
         create_user = response.json()
 
         # This is worth doing as Shinobi's API is all over the place - it happily returns OK for invalid requests
         if verify_create:
             assert self.get(email), "Unable to verify created user"
 
-        return self._create_improved_user_entry(create_user["user"])
+        return ShinobiUserOrm._create_improved_user_entry(create_user["user"])
 
     def modify(self, email: str, **kwargs) -> Optional[bool]:
         """
-        TODO
-        :param email:
-        :param kwargs:
-        :return:
+        Modify a user.
+        :param email: the email address of the user to modify.
+        :param kwargs: new property values (currently supported: `password`).
+        :return: whether the user was modified or `None` if not able to confirm
         """
         unsupported_properties = set(kwargs.keys()) - {"mail"} - self.__class__.SUPPORTED_MODIFIABLE_PROPERTIES
         if len(unsupported_properties) > 0:
@@ -114,7 +137,7 @@ class ShinobiUserOrm:
         response = requests.post(
             f"http://{self.host}:{self.port}/super/{self.super_user_token}/accounts/editAdmin",
             json=dict(data=data, account=account))
-        self._raise_if_errors(response)
+        ShinobiUserOrm._raise_if_errors(response)
 
         rows_changed = response.json().get("rowsChanged")
         if rows_changed is None:
@@ -122,12 +145,12 @@ class ShinobiUserOrm:
             return None
         return rows_changed == 1
 
-    def delete(self, email: str, verify_delete: bool = True) -> bool:
+    def delete(self, email: str, verify_delete: bool = False) -> bool:
         """
-        TODO
-        :param email:
-        :param verify_delete:
-        :return:
+        Deletes the user with the given email address.
+        :param email: email address of user
+        :param verify_delete: whether to confirm that the user has been deleted
+        :return: `True` if the user has been deleted, else `False` if they haven't because they didn't exist
         """
         user = self.get(email)
         if user is None:
@@ -144,31 +167,9 @@ class ShinobiUserOrm:
         response = requests.post(
             f"http://{self.host}:{self.port}/super/{self.super_user_token}/accounts/deleteAdmin",
             json=dict(account=account))
-        self._raise_if_errors(response)
+        ShinobiUserOrm._raise_if_errors(response)
 
         if verify_delete:
             assert self.get(email) is None, f"User with email \"{email}\" was not deleted"
 
         return True
-
-    def _create_improved_user_entry(self, user: Dict) -> Dict:
-        """
-        TODO
-        :param user:
-        :return:
-        """
-        user = deepcopy(user)
-        user["email"] = user["mail"]
-        return user
-
-    def _raise_if_errors(self, shinobi_response: Response):
-        """
-        TODO
-        :param shinobi_response:
-        :return:
-        """
-        shinobi_response.raise_for_status()
-        json_response = shinobi_response.json()
-        if not json_response["ok"]:
-            # Yes, the API returns a non-400 when everything is not ok...
-            raise RuntimeError(json_response["msg"])

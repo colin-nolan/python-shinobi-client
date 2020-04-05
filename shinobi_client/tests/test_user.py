@@ -2,8 +2,8 @@ import unittest
 from typing import Tuple, Dict
 from uuid import uuid4
 
-from shinobi.shinobi_controller import ShinobiController, Shinobi
-from shinobi.user import ShinobiUserOrm
+from shinobi_client.shinobi_controller import ShinobiController, Shinobi
+from shinobi_client.user import ShinobiUserOrm
 
 
 def _create_email_and_password() -> Tuple[str, str]:
@@ -81,15 +81,19 @@ class TestShinobiUserOrm(unittest.TestCase):
         email, password = _create_email_and_password()
         self.assertRaises(ValueError, self.user_orm.modify, email, password=password)
 
-    def test_delete_user(self):
+    def test_delete(self):
         user = self._create_user()
         self.user_orm.delete(user["email"])
         self.assertIsNone(self.user_orm.get(user["email"]))
 
-    def test_delete_user_and_verify(self):
+    def test_delete_and_verify(self):
         user = self._create_user()
         self.user_orm.delete(user["email"], verify_delete=True)
         self.assertIsNone(self.user_orm.get(user["email"]))
+
+    def test_delete_when_user_not_exist(self):
+        email, _ = _create_email_and_password()
+        self.assertFalse(self.user_orm.delete(email))
 
     def _create_user(self) -> Dict:
         """

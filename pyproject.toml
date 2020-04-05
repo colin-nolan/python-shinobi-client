@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "shinobi"
+name = "shinobi-client"
 version = "0.1.0"
-description = "https://github.com/colin-nolan/python-shinobi"
+description = "https://github.com/colin-nolan/python-shinobi-client"
 
 license = "AGPL v3.0"
 
@@ -11,8 +11,8 @@ authors = [
 
 readme = "README.md"
 
-repository = "https://github.com/colin-nolan/python-shinobi"
-homepage = "https://github.com/colin-nolan/python-shinobi"
+repository = "https://github.com/colin-nolan/python-shinobi-client"
+homepage = "https://github.com/colin-nolan/python-shinobi-client"
 
 keywords = ["shinobi", "client", "cli"]
 

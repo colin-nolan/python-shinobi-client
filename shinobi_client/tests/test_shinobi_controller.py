@@ -2,7 +2,7 @@ import unittest
 
 import requests
 
-from shinobi.shinobi_controller import ShinobiController, start_shinobi
+from shinobi_client.shinobi_controller import ShinobiController, start_shinobi
 
 
 class TestShinobiController(unittest.TestCase):
