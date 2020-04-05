@@ -2,5 +2,5 @@
 branch = True
 source = .
 omit =
-    shinobi/tests/*
+    shinobi_client/tests/*
 parallel = True
