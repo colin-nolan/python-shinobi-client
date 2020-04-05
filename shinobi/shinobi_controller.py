@@ -6,13 +6,13 @@ from tempfile import mkdtemp
 from time import sleep
 from typing import Callable, Optional, Dict
 
-import shutil
-
+import git
 import requests
 from get_port import find_free_port
 from uuid import uuid4
 
 DEFAULT_DOCKER_SHINOBI_GIT_REPO_URL = "https://github.com/colin-nolan/docker-shinobi"
+DEFAULT_DOCKER_SHINOBI_GIT_REPO_BRANCH = "master"
 
 
 def _requires_docker_shinobi(caller: Callable):
@@ -77,6 +77,7 @@ class ShinobiController:
         return os.path.join(self._temp_directory, os.path.basename(self.docker_shinobi_git_repo_url))
 
     def __init__(self, docker_shinobi_git_repo_url: str = DEFAULT_DOCKER_SHINOBI_GIT_REPO_URL,
+                 docker_shinobi_git_repo_branch: str = DEFAULT_DOCKER_SHINOBI_GIT_REPO_BRANCH,
                  temp_root_location: str = "/tmp"):
         """
         Constructor.
@@ -85,6 +86,7 @@ class ShinobiController:
         """
         self.temp_root_location = temp_root_location
         self.docker_shinobi_git_repo_url = docker_shinobi_git_repo_url
+        self.docker_shinobi_git_repo_branch = docker_shinobi_git_repo_branch
         self.__temp_directory: Optional[str] = None
         self._stop = None
 
@@ -171,11 +173,8 @@ class ShinobiController:
         :return:
         """
         if not os.path.exists(self._shinobi_directory):
-            # TODO: split property variable instead
-            # git.Git(self._temp_directory).clone(DOCKER_SHINOBI_GIT_REPO_URL)
-            # FIXME: temp
-            shutil.copytree("/Users/colin/personal/fun/projects/shinobi/docker-shinobi",
-                            self._temp_directory + "/docker-shinobi")
+            git.Repo.clone_from(self.docker_shinobi_git_repo_url, self._shinobi_directory,
+                                branch=self.docker_shinobi_git_repo_branch)
 
 
 def start_shinobi(*args, **kwargs) -> ShinobiController:

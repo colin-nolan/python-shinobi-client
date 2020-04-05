@@ -30,5 +30,5 @@ get-port = { version = "^0.0.5", optional = true }
 [tool.poetry.dev-dependencies]
 coverage = "^5.0.4"
 
-#[tool.poetry.extras]
-#mysql = ["mysqlclient"]
+[tool.poetry.extras]
+shinobi-controller = ["gitpython", "docker-compose", "get-port"]

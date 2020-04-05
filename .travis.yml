@@ -1,0 +1,23 @@
+---
+
+language: python
+python:
+  - 3.8
+
+services:
+  - docker
+
+before_install:
+  - pip install poetry
+  - pip install codecov
+
+install:
+  - poetry install --no-root --extras "shinobi-controller"
+
+script:
+  - coverage run -m unittest discover -v -s shinobi/tests
+
+after_success:
+  - coverage combine -a
+  - coverage report
+  - codecov
