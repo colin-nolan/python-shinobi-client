@@ -173,3 +173,8 @@ class ShinobiUserOrm:
             assert self.get(email) is None, f"User with email \"{email}\" was not deleted"
 
         return True
+
+
+if __name__ == "__main__":
+    import fire
+    fire.Fire(ShinobiUserOrm)

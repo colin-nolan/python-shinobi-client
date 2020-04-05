@@ -2,8 +2,8 @@
 [![Code Coverage](https://codecov.io/gh/colin-nolan/python-shinobi/branch/master/graph/badge.svg)](https://codecov.io/gh/colin-nolan/python-shinobi)
 
 # Shinobi Python Client
-_A Python client for controlling [Shinobi](https://gitlab.com/Shinobi-Systems/Shinobi), an open-source video management 
-solution._
+_A Python client for controlling [Shinobi](https://gitlab.com/Shinobi-Systems/Shinobi) (an open-source video management 
+solution)._
 
 
 ## About
@@ -24,9 +24,14 @@ Install with ability to start a Shinobi installation:
 pip install shinobi-client[shinobi-controller]
 ```
 
+Install with CLI:
+```
+pip install shinobi-client[cli]
+```
 
 ## Usage
-### User ORM
+### Python
+#### User ORM
 ```python
 from shinobi_client import ShinobiUserOrm
 
@@ -43,9 +48,9 @@ modified = user_orm.modify(email, password=new_password)
 deleted = user_orm.delete(email)
 ```
 
-### Shinobi Controller
+#### Shinobi Controller
 Starts/Stops a temporary [containerised installation of Shinboi](https://github.com/colin-nolan/docker-shinobi). Written
-for the purpose of testing but it is installable as an extra.
+for the purpose of testing but it is also installable as an extra. Requires Docker.
 ```python
 from shinobi_client import start_shinobi
 
@@ -62,6 +67,18 @@ shinobi = controller.start()
 print(shinobi.url)
 # Do things with a temporary Shinobi installation
 controller.stop()
+```
+
+### CLI
+A basic auto-generated CLI is available if the package is installed with the `cli` extra: 
+```
+PYTHONPATH=. python shinobi_client/user.py --host=HOST --port=PORT --super_user_token=SUPER_USER_TOKEN get example@
+```
+e.g.
+```
+$ PYTHONPATH=. python shinobi_client/user.py \
+        --host='0.0.0.0' --port=50694 --super_user_token='26dd3352-73c4-4bbd-8b09-17f2aacbd7b9' \
+    create 'user@example.com' 'password123'
 ```
 
 

@@ -32,7 +32,7 @@ class ShinobiAlreadyRunningError(RuntimeError):
 @dataclass
 class Shinobi:
     """
-    Model of shinobi installation.
+    Model of Shinobi installation.
     """
     super_user_email: str
     super_user_password: str
@@ -169,8 +169,7 @@ class ShinobiController:
 
     def _clone_docker_shinobi(self):
         """
-        TODO
-        :return:
+        Clones repository for running containerised Shinobi.
         """
         if not os.path.exists(self._shinobi_directory):
             git.Repo.clone_from(self.docker_shinobi_git_repo_url, self._shinobi_directory,
