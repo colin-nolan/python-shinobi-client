@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "shinobi-client"
-version = "0.2.1"
+version = "0.2.2"
 description = "A Python client for controlling Shinobi (an open-source video management solution)"
 
 license = "AGPL v3.0"
