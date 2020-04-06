@@ -92,6 +92,15 @@ test = ["pytest (>=3.6.0,<3.9.0 || >3.9.0,<3.9.1 || >3.9.1,<3.9.2 || >3.9.2)", "
 
 [[package]]
 category = "main"
+description = "A backport of the dataclasses module for Python 3.6"
+marker = "python_version >= \"3.6\" and python_version < \"3.7\""
+name = "dataclasses"
+optional = false
+python-versions = ">=3.6, <3.7"
+version = "0.7"
+
+[[package]]
+category = "main"
 description = "A Python library for the Docker Engine API."
 name = "docker"
 optional = true
@@ -443,8 +452,8 @@ cli = ["fire"]
 shinobi-controller = ["gitpython", "docker-compose", "get-port"]
 
 [metadata]
-content-hash = "3d9218e09dbbf1074b42d46365634373f947ae6018a89153140df3edb8bbcd04"
-python-versions = "^3.7"
+content-hash = "f9cd3cecc52f76f5f4197853241a956deaacd04aa0833e3691af161f2c44c3af"
+python-versions = "^3.6"
 
 [metadata.files]
 attrs = [
@@ -537,6 +546,10 @@ cryptography = [
     {file = "cryptography-2.9-cp38-cp38-win32.whl", hash = "sha256:9fc9da390e98cb6975eadf251b6e5fa088820141061bf041cd5c72deba1dc526"},
     {file = "cryptography-2.9-cp38-cp38-win_amd64.whl", hash = "sha256:6b744039b55988519cc183149cceb573189b3e46e16ccf6f8c46798bb767c9dc"},
     {file = "cryptography-2.9.tar.gz", hash = "sha256:0cacd3ef5c604b8e5f59bf2582c076c98a37fe206b31430d0cd08138aff0986e"},
+]
+dataclasses = [
+    {file = "dataclasses-0.7-py3-none-any.whl", hash = "sha256:3459118f7ede7c8bea0fe795bff7c6c2ce287d01dd226202f7c9ebc0610a7836"},
+    {file = "dataclasses-0.7.tar.gz", hash = "sha256:494a6dcae3b8bcf80848eea2ef64c0cc5cd307ffc263e17cdf42f3e5420808e6"},
 ]
 docker = [
     {file = "docker-4.2.0-py2.py3-none-any.whl", hash = "sha256:1c2ddb7a047b2599d1faec00889561316c674f7099427b9c51e8cb804114b553"},
