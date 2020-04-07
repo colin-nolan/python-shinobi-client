@@ -1,36 +1,17 @@
 import unittest
 from typing import Dict
 
-from shinobi_client.shinobi_controller import ShinobiController
-from shinobi_client.models import Shinobi
 from shinobi_client.orms.user import ShinobiUserOrm
-from shinobi_client.tests._common import _create_email_and_password
+from shinobi_client.shinobi import Shinobi
+from shinobi_client.tests._common import _create_email_and_password, TestWithShinobi
 
 
-class TestShinobiUserOrm(unittest.TestCase):
-    """
-    Tests for `ShinobiUserOrm`.
-
-    Shinobi takes a reasonable amount of time to setup so sharing between all tests in class (at the cost of reduced
-    test isolation).
-    """
-    _shinobi_controller: ShinobiController = None
-
-    @classmethod
-    def setUpClass(cls):
-        cls._shinobi_controller = ShinobiController()
-        cls._shinobi = cls._shinobi_controller.start()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls._shinobi_controller.stop()
-
+class TestShinobiUserOrm(TestWithShinobi):
     def setUp(self):
-        self._shinobi: Shinobi = TestShinobiUserOrm._shinobi
+        super().setUp()
         self.user_orm = ShinobiUserOrm(
-            self._shinobi.host,
-            int(self._shinobi.port),
-            self._shinobi.super_user_token,
+            Shinobi(host=self._shinobi.host, port=int(self._shinobi.port),
+                    super_user_token=self._shinobi.super_user_token),
         )
 
     def test_create(self):
@@ -93,7 +74,7 @@ class TestShinobiUserOrm(unittest.TestCase):
         :return: model of the created user
         """
         email, password = _create_email_and_password()
-        return self.user_orm.create(email, password, verify_create=False)
+        return self.user_orm.create(email, password)
 
 
 if __name__ == "__main__":

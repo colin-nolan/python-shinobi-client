@@ -1,6 +1,5 @@
 import os
 import subprocess
-from dataclasses import dataclass
 from pathlib import Path
 from tempfile import mkdtemp
 from time import sleep
@@ -10,6 +9,8 @@ import git
 import requests
 from get_port import find_free_port
 from uuid import uuid4
+
+from shinobi_client.shinobi import Shinobi
 
 DEFAULT_DOCKER_SHINOBI_GIT_REPO_URL = "https://github.com/colin-nolan/docker-shinobi"
 DEFAULT_DOCKER_SHINOBI_GIT_REPO_BRANCH = "master"
@@ -27,22 +28,6 @@ class ShinobiAlreadyRunningError(RuntimeError):
     """
     Error raised if it is a problem that Shinobi is already running.
     """
-
-
-@dataclass
-class Shinobi:
-    """
-    Model of Shinobi installation.
-    """
-    super_user_email: str
-    super_user_password: str
-    super_user_token: str
-    port: str
-    host: str
-
-    @property
-    def url(self) -> str:
-        return f"http://{self.host}:{self.port}"
 
 
 class ShinobiController:

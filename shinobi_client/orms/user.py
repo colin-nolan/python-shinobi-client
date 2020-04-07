@@ -5,6 +5,8 @@ import requests
 from requests import Response
 from logzero import logger
 
+from shinobi_client.shinobi import Shinobi
+
 
 class ShinobiUserOrm:
     """
@@ -35,16 +37,12 @@ class ShinobiUserOrm:
             # Yes, the API returns a non-400 when everything is not ok...
             raise RuntimeError(json_response["msg"])
 
-    def __init__(self, host: str, port: int, super_user_token: str):
+    def __init__(self, shinobi: Shinobi):
         """
         Constructor.
-        :param host: location of the Shinboi host
-        :param port: port Shinobi is running on
-        :param super_user_token: a Shinobi super-user token
+        :param shinobi: installation to connect to
         """
-        self.host = host
-        self.port = port
-        self.super_user_token = super_user_token
+        self.shinobi = shinobi
 
     def get(self, email: str) -> Optional[Dict]:
         """
@@ -67,7 +65,7 @@ class ShinobiUserOrm:
         :return: tuple where each element contains details about a specific user
         """
         response = requests.get(
-            f"http://{self.host}:{self.port}/super/{self.super_user_token}/accounts/list")
+            f"http://{self.shinobi.host}:{self.shinobi.port}/super/{self.shinobi.super_user_token}/accounts/list")
         ShinobiUserOrm._raise_if_errors(response)
         return tuple(ShinobiUserOrm._create_improved_user_entry(user) for user in response.json()["users"])
 
@@ -98,7 +96,7 @@ class ShinobiUserOrm:
                 "b2_use_global": "0", "webdav_use_global": "0"})
         }
         response = requests.post(
-            f"http://{self.host}:{self.port}/super/{self.super_user_token}/accounts/registerAdmin",
+            f"http://{self.shinobi.host}:{self.shinobi.port}/super/{self.shinobi.super_user_token}/accounts/registerAdmin",
             json=dict(data=data))
         ShinobiUserOrm._raise_if_errors(response)
         create_user = response.json()
@@ -135,7 +133,7 @@ class ShinobiUserOrm:
             "ke": existing_user["ke"]
         }
         response = requests.post(
-            f"http://{self.host}:{self.port}/super/{self.super_user_token}/accounts/editAdmin",
+            f"http://{self.shinobi.host}:{self.shinobi.port}/super/{self.shinobi.super_user_token}/accounts/editAdmin",
             json=dict(data=data, account=account))
         ShinobiUserOrm._raise_if_errors(response)
 
@@ -165,7 +163,7 @@ class ShinobiUserOrm:
         # Odd interface, defined here:
         # https://gitlab.com/Shinobi-Systems/Shinobi/-/blob/dev/libs/webServerSuperPaths.js#L385
         response = requests.post(
-            f"http://{self.host}:{self.port}/super/{self.super_user_token}/accounts/deleteAdmin",
+            f"http://{self.shinobi.host}:{self.shinobi.port}/super/{self.shinobi.super_user_token}/accounts/deleteAdmin",
             json=dict(account=account))
         ShinobiUserOrm._raise_if_errors(response)
 
