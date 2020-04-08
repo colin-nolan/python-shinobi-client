@@ -10,7 +10,7 @@ import requests
 from get_port import find_free_port
 from uuid import uuid4
 
-from shinobi_client.shinobi import Shinobi
+from shinobi_client.client import ShinobiClient
 
 DEFAULT_DOCKER_SHINOBI_GIT_REPO_URL = "https://github.com/colin-nolan/docker-shinobi"
 DEFAULT_DOCKER_SHINOBI_GIT_REPO_BRANCH = "master"
@@ -37,15 +37,15 @@ class ShinobiController:
     Designed for temporarily running Shinobi, e.g. for testing.
     """
     @staticmethod
-    def _wait_for_start(shinobi: Shinobi):
+    def _wait_for_start(shinobi_client: ShinobiClient):
         """
         Blocks until service is ready.
-        :param shinobi: started shinobi
+        :param shinobi_client: client connected to Shinobi installation
         """
         interval = 0.05
         while True:
             try:
-                requests.get(shinobi.url)
+                requests.get(shinobi_client.url)
                 return
             except requests.exceptions.ConnectionError:
                 sleep(interval)
@@ -75,14 +75,14 @@ class ShinobiController:
         self.__temp_directory: Optional[str] = None
         self._stop = None
 
-    def __enter__(self) -> Shinobi:
+    def __enter__(self) -> ShinobiClient:
         return self.start()
 
     def __exit__(self, *args):
         self.stop()
 
     @_requires_docker_shinobi
-    def start(self) -> Shinobi:
+    def start(self) -> ShinobiClient:
         """
         Starts an installation of Shinobi.
         :return: client for the started installation
@@ -100,7 +100,7 @@ class ShinobiController:
         subprocess.check_output(
             ["docker-compose", "up", "--build", "--detach", "--renew-anon-volumes"],
             cwd=self._shinobi_directory, env=environment)
-        shinobi = Shinobi(
+        shinobi_client = ShinobiClient(
             super_user_email=environment["SHINOBI_SUPER_USER_EMAIL"],
             super_user_password=environment["SHINOBI_SUPER_USER_PASSWORD"],
             super_user_token=environment["SHINOBI_SUPER_USER_TOKEN"],
@@ -108,9 +108,9 @@ class ShinobiController:
             # XXX: hardcoding assumption that the Docker daemon is on the host
             host="0.0.0.0"
         )
-        ShinobiController._wait_for_start(shinobi)
+        ShinobiController._wait_for_start(shinobi_client)
 
-        return shinobi
+        return shinobi_client
 
     def stop(self):
         """

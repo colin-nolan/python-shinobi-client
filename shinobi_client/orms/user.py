@@ -1,10 +1,11 @@
 import json
 from copy import deepcopy
 from typing import Optional, Dict, Tuple
+
 import requests
 from logzero import logger
 
-from shinobi_client.shinobi import Shinobi
+from shinobi_client import ShinobiClient
 from shinobi_client._common import raise_if_errors
 
 
@@ -27,12 +28,12 @@ class ShinobiUserOrm:
             user["password"] = user["pass"]
         return user
 
-    def __init__(self, shinobi: Shinobi):
+    def __init__(self, shinobi_client: ShinobiClient):
         """
         Constructor.
-        :param shinobi: installation to connect to
+        :param shinobi_client: client connected to Shinobi installation
         """
-        self.shinobi = shinobi
+        self.shinobi_client = shinobi_client
 
     def get(self, email: str) -> Optional[Dict]:
         """
@@ -55,7 +56,7 @@ class ShinobiUserOrm:
         :return: tuple where each element contains details about a specific user
         """
         response = requests.get(
-            f"http://{self.shinobi.host}:{self.shinobi.port}/super/{self.shinobi.super_user_token}/accounts/list")
+            f"http://{self.shinobi_client.host}:{self.shinobi_client.port}/super/{self.shinobi_client.super_user_token}/accounts/list")
         raise_if_errors(response)
         return tuple(ShinobiUserOrm._create_improved_user_entry(user) for user in response.json()["users"])
 
@@ -86,7 +87,7 @@ class ShinobiUserOrm:
                 "b2_use_global": "0", "webdav_use_global": "0"})
         }
         response = requests.post(
-            f"http://{self.shinobi.host}:{self.shinobi.port}/super/{self.shinobi.super_user_token}/accounts/registerAdmin",
+            f"http://{self.shinobi_client.host}:{self.shinobi_client.port}/super/{self.shinobi_client.super_user_token}/accounts/registerAdmin",
             json=dict(data=data))
         raise_if_errors(response)
         create_user = response.json()
@@ -123,7 +124,7 @@ class ShinobiUserOrm:
             "ke": existing_user["ke"]
         }
         response = requests.post(
-            f"http://{self.shinobi.host}:{self.shinobi.port}/super/{self.shinobi.super_user_token}/accounts/editAdmin",
+            f"http://{self.shinobi_client.host}:{self.shinobi_client.port}/super/{self.shinobi_client.super_user_token}/accounts/editAdmin",
             json=dict(data=data, account=account))
         raise_if_errors(response)
 
@@ -153,7 +154,7 @@ class ShinobiUserOrm:
         # Odd interface, defined here:
         # https://gitlab.com/Shinobi-Systems/Shinobi/-/blob/dev/libs/webServerSuperPaths.js#L385
         response = requests.post(
-            f"http://{self.shinobi.host}:{self.shinobi.port}/super/{self.shinobi.super_user_token}/accounts/deleteAdmin",
+            f"http://{self.shinobi_client.host}:{self.shinobi_client.port}/super/{self.shinobi_client.super_user_token}/accounts/deleteAdmin",
             json=dict(account=account))
         raise_if_errors(response)
 
