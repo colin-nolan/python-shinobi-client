@@ -166,13 +166,22 @@ class ShinobiUserOrm:
 
         return True
 
-    def _wait_and_verify(self, email: str, user_should_exist: bool):
-        # TODO: remove magic numbers
-        for i in range(10):
+    def _wait_and_verify(self, email: str, user_should_exist: bool, *, wait_iterations: int = 10,
+                         iteration_wait_in_milliseconds_multiplier: int = 100):
+        """
+        Wait to verify if the user with the given email address exists (if they should) or doesn't (if they shouldn't).
+        :param email: email of user to check
+        :param user_should_exist: whether the user should exist
+        :param wait_iterations: number of times to try if state not valid
+        :param iteration_wait_in_milliseconds_multiplier: waiting for `wait_iterations` * `iteration_wait_in_milliseconds_multiplier`
+                                                          between each iteration
+        :return: `True` if verified state matches desired, else `False`
+        """
+        for i in range(wait_iterations):
             user = self.get(email)
             if user and user_should_exist:
                 return True
             elif not user and not user_should_exist:
                 return True
-            sleep(100 * i)
+            sleep(iteration_wait_in_milliseconds_multiplier * i)
         return False
