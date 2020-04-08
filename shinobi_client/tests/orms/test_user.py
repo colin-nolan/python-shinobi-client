@@ -21,12 +21,6 @@ class TestShinobiUserOrm(TestWithShinobi):
         self.assertEqual(email, user["mail"])
         self.assertIsNotNone(self.api_key.get(email, password))
 
-    def test_create_and_verify(self):
-        email, password = _create_email_and_password()
-        self.user_orm.create(email, password, verify_create=True)
-        user = self.user_orm.get(email)
-        self.assertEqual(email, user["mail"])
-
     def test_get_when_does_not_exist(self):
         user = self.user_orm.get("example@doesnotexist.com")
         self.assertIsNone(user)
@@ -64,11 +58,6 @@ class TestShinobiUserOrm(TestWithShinobi):
     def test_delete(self):
         user = self._create_user()
         self.user_orm.delete(user["email"])
-        self.assertIsNone(self.user_orm.get(user["email"]))
-
-    def test_delete_and_verify(self):
-        user = self._create_user()
-        self.user_orm.delete(user["email"], verify_delete=True)
         self.assertIsNone(self.user_orm.get(user["email"]))
 
 
