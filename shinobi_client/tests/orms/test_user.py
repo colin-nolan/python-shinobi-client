@@ -11,8 +11,8 @@ class TestShinobiUserOrm(TestWithShinobi):
     """
     def setUp(self):
         super().setUp()
-        self.user_orm = ShinobiUserOrm(self._shinobi)
-        self.api_key = ShinobiApiKey(self._shinobi)
+        self.user_orm = ShinobiUserOrm(self._shinobi_client)
+        self.api_key = ShinobiApiKey(self._shinobi_client)
 
     def test_create(self):
         email, password = _create_email_and_password()

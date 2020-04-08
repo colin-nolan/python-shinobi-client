@@ -10,7 +10,7 @@ class TestShinobiApiKey(TestWithShinobi):
     """
     def setUp(self):
         super().setUp()
-        self.api_key = ShinobiApiKey(self._shinobi)
+        self.api_key = ShinobiApiKey(self._shinobi_client)
 
     def test_get_for_non_existent_user(self):
         self.assertRaises(RuntimeError, self.api_key.get, "does_not@exist", "password")

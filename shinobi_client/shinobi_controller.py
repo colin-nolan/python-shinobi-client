@@ -85,8 +85,8 @@ class ShinobiController:
     def start(self) -> Shinobi:
         """
         Starts an installation of Shinobi.
-        :return: details about the started installation
-        :raises ShinobiAlreadyRunningError: if Shinobi is already running
+        :return: client for the started installation
+        :raises ShinobiAlreadyRunningError: if the instance is already running Shinobi
         """
         if self._stop:
             raise ShinobiAlreadyRunningError()

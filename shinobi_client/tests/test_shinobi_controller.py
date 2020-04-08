@@ -34,8 +34,8 @@ class TestStartShinobi(unittest.TestCase):
     Tests for `start_shinobi`.
     """
     def test_use_in_context(self):
-        with start_shinobi() as shinobi:
-            home_page_request = requests.get(shinobi.url)
+        with start_shinobi() as shinobi_client:
+            home_page_request = requests.get(shinobi_client.url)
             self.assertTrue(home_page_request.ok)
 
 

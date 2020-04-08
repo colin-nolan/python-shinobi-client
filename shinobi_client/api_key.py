@@ -1,6 +1,6 @@
 import requests
 
-from shinobi_client.shinobi import Shinobi
+from shinobi_client.client import ShinobiClient
 from shinobi_client._common import raise_if_errors
 
 
@@ -14,21 +14,21 @@ class ShinobiApiKey:
     """
     TODO
     """
-    def __init__(self, shinobi: Shinobi):
+    def __init__(self, shinobi_client: ShinobiClient):
         """
-        TODO
-        :param shinobi:
+        Constructor
+        :param shinobi_client: client for Shinobi
         """
-        self.shinobi = shinobi
+        self.shinobi_client = shinobi_client
 
     def get(self, email: str, password: str):
-        user = self.shinobi.user.get(email)
+        user = self.shinobi_client.user.get(email)
         if user is None:
             raise RuntimeError(f"No user found with the given email: {email}")
 
         # API reference: https://shinobi.video/docs/api#content-login-by-api--get-temporary-api-key
         response = requests.post(
-            f"http://{self.shinobi.host}:{self.shinobi.port}/?json=true",
+            f"http://{self.shinobi_client.host}:{self.shinobi_client.port}/?json=true",
             data={
                 "mail": user["mail"],
                 "pass": password,

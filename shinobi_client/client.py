@@ -1,10 +1,8 @@
 from dataclasses import dataclass
 
 
-
-
 @dataclass
-class Shinobi:
+class ShinobiClient:
     """
     Model of Shinobi installation.
     """
@@ -27,8 +25,3 @@ class Shinobi:
     def api_key(self) -> "ShinobiApiKey":
         from shinobi_client.api_key import ShinobiApiKey
         return ShinobiApiKey(self)
-
-
-if __name__ == "__main__":
-    import fire
-    fire.Fire(Shinobi)

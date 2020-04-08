@@ -31,21 +31,29 @@ pip install shinobi-client[cli]
 
 ## Usage
 ### Python
+Start with creating the Shinobi client:
+```python
+from shinobi_client import ShinobiClient
+
+shinobi_client = ShinobiClient(host, port, super_user_token)
+```
+
 #### User ORM
 ```python
-from shinobi_client import ShinobiUserOrm
+user = shinobi_client.user.get(email)
 
-user_orm = ShinobiUserOrm(host, port, super_user_token)
+users = shinobi_client.user.get_all()
 
-user = user_orm.get(email)
+user = shinobi_client.user.create(email, password)
 
-users = user_orm.get_all()
+modified = shinobi_client.user.modify(email, password=new_password)
 
-user = user_orm.create(email, password)
+deleted = shinobi_client.user.delete(email)
+```
 
-modified = user_orm.modify(email, password=new_password)
-
-deleted = user_orm.delete(email)
+#### API Key
+```python
+api_key = shinobi_client.api_key.get(email, password)
 ```
 
 #### Shinobi Controller
@@ -54,8 +62,8 @@ for the purpose of testing but it is also installable as an extra. Requires Dock
 ```python
 from shinobi_client import start_shinobi
 
-with start_shinobi() as shinobi:
-    print(shinobi.url)
+with start_shinobi() as shinobi_client:
+    print(shinobi_client.url)
     # Do things with a temporary Shinobi installation
 ```
 or
@@ -63,8 +71,8 @@ or
 from shinobi_client import ShinobiController
 
 controller = ShinobiController()
-shinobi = controller.start()
-print(shinobi.url)
+shinobi_client = controller.start()
+print(shinobi_client.url)
 # Do things with a temporary Shinobi installation
 controller.stop()
 ```
@@ -76,7 +84,7 @@ PYTHONPATH=. python shinobi_client/user.py --host=HOST --port=PORT --super_user_
 ```
 e.g.
 ```
-$ PYTHONPATH=. python shinobi_client/user.py \
+$ PYTHONPATH=. python shinobi_client/cli.py \
         --host='0.0.0.0' --port=50694 --super_user_token='26dd3352-73c4-4bbd-8b09-17f2aacbd7b9' \
     create 'user@example.com' 'password123'
 ```
@@ -85,7 +93,7 @@ $ PYTHONPATH=. python shinobi_client/user.py \
 ## Development
 Install with dev-dependencies:
 ```
-poetry install --no-root --extras "shinobi-controller"
+poetry install --no-root --extras "shinobi-controller, cli"
 ```
 
 Run tests with:

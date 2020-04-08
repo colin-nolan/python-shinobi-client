@@ -4,7 +4,7 @@ from typing import Tuple, ClassVar, Dict
 from uuid import uuid4
 
 from shinobi_client.shinobi_controller import ShinobiController
-from shinobi_client.shinobi import Shinobi
+from shinobi_client.client import ShinobiClient
 
 
 def _create_email_and_password() -> Tuple[str, str]:
@@ -24,13 +24,13 @@ class TestWithShinobi(unittest.TestCase, metaclass=ABCMeta):
     test isolation) might make sense.
     """
     _shinobi_controller_singleton: ClassVar[ShinobiController]
-    _shinobi_singleton: ClassVar[Shinobi]
+    _shinobi_client_singleton: ClassVar[ShinobiClient]
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls._shinobi_controller_singleton = ShinobiController()
-        cls._shinobi_singleton = cls._shinobi_controller_singleton.start()
+        cls._shinobi_client_singleton = cls._shinobi_controller_singleton.start()
 
     @classmethod
     def tearDownClass(cls):
@@ -39,7 +39,7 @@ class TestWithShinobi(unittest.TestCase, metaclass=ABCMeta):
 
     def setUp(self):
         super().setUp()
-        self._shinobi: Shinobi = self.__class__._shinobi_singleton
+        self._shinobi_client: ShinobiClient = self.__class__._shinobi_client_singleton
 
     def _create_user(self) -> Dict:
         """
@@ -47,4 +47,4 @@ class TestWithShinobi(unittest.TestCase, metaclass=ABCMeta):
         :return: model of the created user
         """
         email, password = _create_email_and_password()
-        return self._shinobi.user.create(email, password)
+        return self._shinobi_client.user.create(email, password)
