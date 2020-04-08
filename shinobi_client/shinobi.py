@@ -20,5 +20,15 @@ class Shinobi:
 
     @property
     def user(self) -> "ShinobiUserOrm":
-        from shinobi_client import ShinobiUserOrm
+        from shinobi_client.orms.user import ShinobiUserOrm
         return ShinobiUserOrm(self)
+
+    @property
+    def api_key(self) -> "ShinobiApiKey":
+        from shinobi_client.api_key import ShinobiApiKey
+        return ShinobiApiKey(self)
+
+
+if __name__ == "__main__":
+    import fire
+    fire.Fire(Shinobi)

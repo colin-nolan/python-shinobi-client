@@ -2,10 +2,10 @@ import json
 from copy import deepcopy
 from typing import Optional, Dict, Tuple
 import requests
-from requests import Response
 from logzero import logger
 
 from shinobi_client.shinobi import Shinobi
+from shinobi_client._common import raise_if_errors
 
 
 class ShinobiUserOrm:
@@ -23,19 +23,9 @@ class ShinobiUserOrm:
         """
         user = deepcopy(user)
         user["email"] = user["mail"]
+        if "pass" in user:
+            user["password"] = user["pass"]
         return user
-
-    @staticmethod
-    def _raise_if_errors(shinobi_response: Response):
-        """
-        Raises an exception if the response from Shinobi indicated there were errors.
-        :param shinobi_response: the response from Shinobi
-        """
-        shinobi_response.raise_for_status()
-        json_response = shinobi_response.json()
-        if not json_response["ok"]:
-            # Yes, the API returns a non-400 when everything is not ok...
-            raise RuntimeError(json_response["msg"])
 
     def __init__(self, shinobi: Shinobi):
         """
@@ -66,7 +56,7 @@ class ShinobiUserOrm:
         """
         response = requests.get(
             f"http://{self.shinobi.host}:{self.shinobi.port}/super/{self.shinobi.super_user_token}/accounts/list")
-        ShinobiUserOrm._raise_if_errors(response)
+        raise_if_errors(response)
         return tuple(ShinobiUserOrm._create_improved_user_entry(user) for user in response.json()["users"])
 
     def create(self, email: str, password: str, verify_create: bool = False) -> Dict:
@@ -98,7 +88,7 @@ class ShinobiUserOrm:
         response = requests.post(
             f"http://{self.shinobi.host}:{self.shinobi.port}/super/{self.shinobi.super_user_token}/accounts/registerAdmin",
             json=dict(data=data))
-        ShinobiUserOrm._raise_if_errors(response)
+        raise_if_errors(response)
         create_user = response.json()
 
         # This is worth doing as Shinobi's API is all over the place - it happily returns OK for invalid requests
@@ -135,7 +125,7 @@ class ShinobiUserOrm:
         response = requests.post(
             f"http://{self.shinobi.host}:{self.shinobi.port}/super/{self.shinobi.super_user_token}/accounts/editAdmin",
             json=dict(data=data, account=account))
-        ShinobiUserOrm._raise_if_errors(response)
+        raise_if_errors(response)
 
         rows_changed = response.json().get("rowsChanged")
         if rows_changed is None:
@@ -165,14 +155,9 @@ class ShinobiUserOrm:
         response = requests.post(
             f"http://{self.shinobi.host}:{self.shinobi.port}/super/{self.shinobi.super_user_token}/accounts/deleteAdmin",
             json=dict(account=account))
-        ShinobiUserOrm._raise_if_errors(response)
+        raise_if_errors(response)
 
         if verify_delete:
             assert self.get(email) is None, f"User with email \"{email}\" was not deleted"
 
         return True
-
-
-if __name__ == "__main__":
-    import fire
-    fire.Fire(ShinobiUserOrm)

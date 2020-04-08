@@ -1,6 +1,6 @@
 import unittest
 from abc import ABCMeta
-from typing import Tuple, ClassVar
+from typing import Tuple, ClassVar, Dict
 from uuid import uuid4
 
 from shinobi_client.shinobi_controller import ShinobiController
@@ -39,4 +39,12 @@ class TestWithShinobi(unittest.TestCase, metaclass=ABCMeta):
 
     def setUp(self):
         super().setUp()
-        self._shinobi = self.__class__._shinobi_singleton
+        self._shinobi: Shinobi = self.__class__._shinobi_singleton
+
+    def _create_user(self) -> Dict:
+        """
+        Creates a user.
+        :return: model of the created user
+        """
+        email, password = _create_email_and_password()
+        return self._shinobi.user.create(email, password)
