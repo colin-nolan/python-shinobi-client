@@ -13,7 +13,7 @@ before_install:
   - pip install poetry codecov coverage
 
 install:
-  - poetry install --no-root --extras "shinobi-controller, cli"
+  - poetry install --no-root --extras "shinobi-controller cli"
 
 script:
   - coverage run -m unittest discover -v -s shinobi_client/tests
