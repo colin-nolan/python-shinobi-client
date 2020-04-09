@@ -1,3 +1,5 @@
+from typing import Dict
+
 import requests
 
 from shinobi_client.client import ShinobiClient
@@ -21,7 +23,14 @@ class ShinobiApiKey:
         """
         self.shinobi_client = shinobi_client
 
-    def get(self, email: str, password: str):
+    def get(self, email: str, password: str) -> Dict:
+        """
+        TODO
+        :param email:
+        :param password:
+        :return:
+        :raises ShinobiWrongPasswordError:
+        """
         user = self.shinobi_client.user.get(email)
         if user is None:
             raise RuntimeError(f"No user found with the given email: {email}")

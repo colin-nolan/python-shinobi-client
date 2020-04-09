@@ -15,30 +15,30 @@ undocumented endpoints (which may not be stable).
 
 ## Installation
 Install from [PyPi](https://pypi.org/project/shinobi-client/):
-```
+```bash
 pip install shinobi-client
 ```
 
 Install with ability to start a Shinobi installation:
-```
+```bash
 pip install shinobi-client[shinobi-controller]
 ```
 
 Install with CLI:
-```
+```bash
 pip install shinobi-client[cli]
 ```
 
 ## Usage
 ### Python
-Start with creating the Shinobi client:
+Start with creating the client for a particular Shinobi installation:
 ```python
 from shinobi_client import ShinobiClient
 
 shinobi_client = ShinobiClient(host, port, super_user_token)
 ```
 
-#### User ORM
+#### User
 ```python
 user = shinobi_client.user.get(email)
 
@@ -79,11 +79,13 @@ controller.stop()
 
 ### CLI
 A basic auto-generated CLI is available if the package is installed with the `cli` extra: 
-```
-PYTHONPATH=. python shinobi_client/user.py --host=HOST --port=PORT --super_user_token=SUPER_USER_TOKEN get example@
+```bash
+PYTHONPATH=. python shinobi_client/user.py \
+        --host=HOST --port=PORT --super_user_token=SUPER_USER_TOKEN \
+    get user@example.com
 ```
 e.g.
-```
+```bash
 $ PYTHONPATH=. python shinobi_client/cli.py \
         --host='0.0.0.0' --port=50694 --super_user_token='26dd3352-73c4-4bbd-8b09-17f2aacbd7b9' \
     create 'user@example.com' 'password123'
@@ -92,12 +94,12 @@ $ PYTHONPATH=. python shinobi_client/cli.py \
 
 ## Development
 Install with dev-dependencies:
-```
+```bash
 poetry install --no-root --extras "shinobi-controller, cli"
 ```
 
 Run tests with:
-```
+```bash
 python -m unittest discover -v -s shinobi/tests
 ```
 
