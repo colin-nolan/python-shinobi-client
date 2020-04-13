@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 from pathlib import Path
 from tempfile import mkdtemp
@@ -120,6 +121,7 @@ class ShinobiController:
         if not self._stop:
             return False
         self._stop()
+        shutil.rmtree(self._temp_directory)
         self._stop = None
         return True
 
