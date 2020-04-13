@@ -1,20 +1,11 @@
 from typing import Dict
 
-import requests
-
 from shinobi_client.client import ShinobiClient
-from shinobi_client._common import raise_if_errors
-
-
-class ShinobiWrongPasswordError(RuntimeError):
-    """
-    TODO
-    """
 
 
 class ShinobiApiKey:
     """
-    TODO
+    API key ORM.
     """
     def __init__(self, shinobi_client: ShinobiClient):
         """
@@ -25,28 +16,10 @@ class ShinobiApiKey:
 
     def get(self, email: str, password: str) -> Dict:
         """
-        TODO
-        :param email:
-        :param password:
-        :return:
-        :raises ShinobiWrongPasswordError:
+        Gets the API key for the user with the given email address and password.
+        :param email: user's email address
+        :param password: user's password
+        :return: the user's API key
+        :raises ShinobiWrongPasswordError: raised if an incorrect email/password pair is supplied
         """
-        user = self.shinobi_client.user.get(email)
-        if user is None:
-            raise RuntimeError(f"No user found with the given email: {email}")
-
-        # API reference: https://shinobi.video/docs/api#content-login-by-api--get-temporary-api-key
-        response = requests.post(
-            f"http://{self.shinobi_client.host}:{self.shinobi_client.port}/?json=true",
-            data={
-                "mail": user["mail"],
-                "pass": password,
-                "ke": user["ke"]
-            })
-        raise_if_errors(response, raise_if_json_not_ok=False)
-
-        if not response.json()["ok"]:
-            # We can only assume this means that the password was incorrect...
-            raise ShinobiWrongPasswordError((email, user))
-
-        return response.json()["$user"]["auth_token"]
+        return self.shinobi_client.user.get(email, password)["auth_token"]

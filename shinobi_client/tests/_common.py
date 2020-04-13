@@ -40,6 +40,7 @@ class TestWithShinobi(unittest.TestCase, metaclass=ABCMeta):
     def setUp(self):
         super().setUp()
         self._shinobi_client: ShinobiClient = self.__class__._shinobi_client_singleton
+        self._superless_shinobi_client = ShinobiClient(self._shinobi_client.host, self._shinobi_client.port)
 
     def _create_user(self) -> Dict:
         """

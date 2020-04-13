@@ -42,6 +42,8 @@ shinobi_client = ShinobiClient(host, port, super_user_token=super_user_token)
 #### User
 ```python
 user = shinobi_client.user.get(email)
+# Get user details using the user's password (does not require super user token) 
+user = shinobi_client.user.create(email, password)
 
 users = shinobi_client.user.get_all()
 

@@ -1,6 +1,7 @@
 import unittest
 
-from shinobi_client.api_key import ShinobiApiKey, ShinobiWrongPasswordError
+from shinobi_client.api_key import ShinobiApiKey
+from shinobi_client import ShinobiWrongPasswordError
 from shinobi_client.tests._common import TestWithShinobi
 
 
@@ -10,7 +11,7 @@ class TestShinobiApiKey(TestWithShinobi):
     """
     def setUp(self):
         super().setUp()
-        self.api_key = ShinobiApiKey(self._shinobi_client)
+        self.api_key = ShinobiApiKey(self._superless_shinobi_client)
 
     def test_get_for_non_existent_user(self):
         self.assertRaises(RuntimeError, self.api_key.get, "does_not@exist", "password")
@@ -22,7 +23,7 @@ class TestShinobiApiKey(TestWithShinobi):
     def test_get_api_key(self):
         user = self._create_user()
         api_key = self.api_key.get(user["email"], user["password"])
-
+        self.assertGreater(len(api_key), 0)
 
 
 if __name__ == "__main__":

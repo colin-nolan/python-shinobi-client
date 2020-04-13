@@ -1,5 +1,7 @@
 import json
 from copy import deepcopy
+from dataclasses import dataclass
+
 from time import sleep
 from typing import Optional, Dict, Tuple
 
@@ -8,6 +10,15 @@ from logzero import logger
 
 from shinobi_client import ShinobiClient
 from shinobi_client._common import raise_if_errors, ShinobiSuperUserCredentialsRequiredError
+
+
+@dataclass
+class ShinobiWrongPasswordError(RuntimeError):
+    """
+    TODO
+    """
+    email: str
+    password: str
 
 
 class ShinobiUserOrm:
@@ -43,20 +54,53 @@ class ShinobiUserOrm:
         """
         self.shinobi_client = shinobi_client
 
-    def get(self, email: str) -> Optional[Dict]:
+    def get(self, email: str, password: str = None) -> Optional[Dict]:
         """
         Gets details about the user with the given email address.
         :param email: user's email address
+        :param password: password of the user - if supplied will get the details as the user opposed to the super user
+        :return: details about user else `None` if the user does not exist
+        :raises ShinobiWrongPasswordError: raised if an incorrect email/password pair is supplied
+        """
+        return self._get_as_user(email, password) if password else self._get_as_super_user(email)
+
+    def _get_as_user(self, email: str, password: str) -> Dict:
+        """
+        Gets details about the user with the given email address, using the user's own credentials.
+        :param email: user's email address
+        :param password: user's password
+        :return: details about user
+        :raises ShinobiWrongPasswordError: raised if an incorrect email/password pair is supplied
+        """
+        response = requests.post(
+            f"http://{self.shinobi_client.host}:{self.shinobi_client.port}/?json=true",
+            data={
+                "mail": email,
+                "pass": password
+            })
+        raise_if_errors(response, raise_if_json_not_ok=False)
+
+        if not response.json()["ok"]:
+            # We can only assume this means that the password was incorrect...
+            raise ShinobiWrongPasswordError(email, password)
+
+        user = response.json()["$user"]
+        user["pass"] = password
+        return ShinobiUserOrm._create_improved_user_entry(user)
+
+    def _get_as_super_user(self, email: str) -> Optional[Dict]:
+        """
+        Gets details about the user with the given email address, using the super user's credentials.
+        :param email: user's email address
         :return: details about user else `None` if the user does not exist
         """
-        # XXX: For some reason, Shinobi doesn't have an endpoint to query an individual user
+        # XXX: For some reason, Shinobi doesn't have an endpoint to query an individual user as superuser
         users = self.get_all()
         matched_users = tuple(filter(lambda user: user["mail"] == email, users))
         assert len(matched_users) <= 1, f"More than one user found with the email address: {email}"
-        if len(matched_users) == 1:
-            return ShinobiUserOrm._create_improved_user_entry(matched_users[0])
-        else:
+        if len(matched_users) == 0:
             return None
+        return ShinobiUserOrm._create_improved_user_entry(matched_users[0])
 
     def get_all(self) -> Tuple:
         """
