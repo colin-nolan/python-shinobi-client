@@ -121,7 +121,7 @@ class ShinobiController:
         if not self._stop:
             return False
         self._stop()
-        shutil.rmtree(self._temp_directory)
+        shutil.rmtree(self._temp_directory, ignore_errors=True)
         self._stop = None
         return True
 
