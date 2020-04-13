@@ -8,7 +8,7 @@ class ShinobiClient:
     """
     host: str
     port: str
-    super_user_token: str
+    super_user_token: str = None
     super_user_email: str = None
     super_user_password: str = None
 

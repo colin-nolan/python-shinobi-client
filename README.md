@@ -35,8 +35,9 @@ Start with creating the client for a particular Shinobi installation:
 ```python
 from shinobi_client import ShinobiClient
 
-shinobi_client = ShinobiClient(host, port, super_user_token)
+shinobi_client = ShinobiClient(host, port, super_user_token=super_user_token)
 ```
+(`super_user_token` is optional and only required for some operations.)
 
 #### User
 ```python
@@ -95,7 +96,7 @@ $ PYTHONPATH=. python shinobi_client/cli.py \
 ## Development
 Install with dev-dependencies:
 ```bash
-poetry install --no-root --extras "shinobi-controller, cli"
+poetry install --no-root --extras "shinobi-controller cli"
 ```
 
 Run tests with:

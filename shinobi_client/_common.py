@@ -1,6 +1,12 @@
 from requests import Response
 
 
+class ShinobiSuperUserCredentialsRequiredError(RuntimeError):
+    """
+    Raised if an operation requires super user credentials that have not been supplied.
+    """
+
+
 def raise_if_errors(shinobi_response: Response, raise_if_json_not_ok: bool = True):
     """
     Raises an exception if the response from Shinobi indicated there were errors.

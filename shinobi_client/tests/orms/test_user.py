@@ -3,6 +3,8 @@ import unittest
 from shinobi_client.api_key import ShinobiApiKey, ShinobiWrongPasswordError
 from shinobi_client.orms.user import ShinobiUserOrm
 from shinobi_client.tests._common import _create_email_and_password, TestWithShinobi
+from shinobi_client.client import ShinobiClient
+from shinobi_client._common import ShinobiSuperUserCredentialsRequiredError
 
 
 class TestShinobiUserOrm(TestWithShinobi):
@@ -59,6 +61,11 @@ class TestShinobiUserOrm(TestWithShinobi):
         user = self._create_user()
         self.user_orm.delete(user["email"])
         self.assertIsNone(self.user_orm.get(user["email"]))
+
+    def test_requires_super_user_credentials(self):
+        superless_shinobi_client = ShinobiClient(self._shinobi_client.host, self._shinobi_client.port)
+        superless_user_orm = ShinobiUserOrm(superless_shinobi_client)
+        self.assertRaises(ShinobiSuperUserCredentialsRequiredError, superless_user_orm.get_all)
 
 
 if __name__ == "__main__":
