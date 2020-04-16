@@ -42,7 +42,7 @@ shinobi_client = ShinobiClient(host, port, super_user_token=super_user_token)
 #### User
 ```python
 user = shinobi_client.user.get(email)
-# Get user details using the user's password (does not require super user token) 
+# Get user details using the user's password (does not require super user token)
 user = shinobi_client.user.create(email, password)
 
 users = shinobi_client.user.get_all()
@@ -57,6 +57,22 @@ deleted = shinobi_client.user.delete(email)
 #### API Key
 ```python
 api_key = shinobi_client.api_key.get(email, password)
+```
+
+#### Monitor (Camera Setup)
+```python
+# Setting monitors (camera setups) for the user with the given email address
+monitor_orm = shinobi_client.monitor(email, password)
+
+monitors = monitor_orm.get_all()
+
+monitor = monitor_orm.get(monitor_id)
+
+monitor = monitor_orm.create(monitor_id, configuration)
+
+modified = monitor_orm.modify(monitor_id, configuration)
+
+deleted =  monitor_orm.delete(monitor_id)
 ```
 
 #### Shinobi Controller

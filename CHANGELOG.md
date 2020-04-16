@@ -6,6 +6,10 @@
   supplied.
 - Details about a user can be queried without a super user token.
 - A user's API key can be attained without a super user token.
+- More specialised errors.
+
+### Added
+- Monitor ORM.
 
 ## 1.0.0
 Initial release.

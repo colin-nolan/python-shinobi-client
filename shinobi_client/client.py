@@ -25,3 +25,13 @@ class ShinobiClient:
     def api_key(self) -> "ShinobiApiKey":
         from shinobi_client.api_key import ShinobiApiKey
         return ShinobiApiKey(self)
+
+    def monitor(self, email: str, password: str) -> "ShinobiMonitor":
+        """
+        TODO
+        :param email:
+        :param password:
+        :return:
+        """
+        from shinobi_client.orms.monitor import ShinobiMonitorOrm
+        return ShinobiMonitorOrm(self, email, password)

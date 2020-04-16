@@ -13,12 +13,20 @@ from shinobi_client._common import raise_if_errors, ShinobiSuperUserCredentialsR
 
 
 @dataclass
-class ShinobiWrongPasswordError(RuntimeError):
+class ShinobiWrongPasswordError(ValueError):
     """
     TODO
     """
     email: str
     password: str
+
+
+@dataclass
+class ShinobiUserAlreadyExistsError(ValueError):
+    """
+    TODO
+    """
+    email: str
 
 
 class ShinobiUserOrm:
@@ -121,7 +129,7 @@ class ShinobiUserOrm:
         """
         # Not trusting Shinobi's API to give back anything useful if the user already exists
         if self.get(email):
-            raise ValueError(f"User with email \"{email}\" already exists")
+            raise ShinobiUserAlreadyExistsError(email)
 
         # The required post does not align with the API documentation (https://shinobi.video/docs/api)
         # Exploiting the undocumented API successfully used by UI.

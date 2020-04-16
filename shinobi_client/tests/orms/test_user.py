@@ -27,6 +27,11 @@ class TestShinobiUserOrm(TestWithShinobi):
         email, password = _create_email_and_password()
         self.assertRaises(ShinobiSuperUserCredentialsRequiredError, self.superless_user_orm.create, email, password)
 
+    def test_create_when_already_exists(self):
+        email, password = _create_email_and_password()
+        self.user_orm.create(email, password)
+        self.assertRaises(ShinobiUserAlreadyExistsError, self.user_orm.create, email, password)
+
     def test_get_when_does_not_exist(self):
         user = self.user_orm.get("example@doesnotexist.com")
         self.assertIsNone(user)
