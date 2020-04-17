@@ -9,7 +9,7 @@ import requests
 from logzero import logger
 
 from shinobi_client import ShinobiClient
-from shinobi_client._common import raise_if_errors, ShinobiSuperUserCredentialsRequiredError
+from shinobi_client._common import raise_if_errors, ShinobiSuperUserCredentialsRequiredError, wait_and_verify
 
 
 @dataclass
@@ -119,12 +119,12 @@ class ShinobiUserOrm:
         raise_if_errors(response)
         return tuple(ShinobiUserOrm._create_improved_user_entry(user) for user in response.json()["users"])
 
-    def create(self, email: str, password: str, verify_create: bool = True) -> Dict:
+    def create(self, email: str, password: str, verify: bool = True) -> Dict:
         """
         Creates a user with the given details.
         :param email: email address of the user
         :param password: password for the user
-        :param verify_create: whether to wait to confirm that the user has been created
+        :param verify: whether to wait to confirm that the user has been created
         :return: details about created user
         """
         # Not trusting Shinobi's API to give back anything useful if the user already exists
@@ -149,9 +149,8 @@ class ShinobiUserOrm:
         raise_if_errors(response)
         create_user = response.json()
 
-        # This is worth doing as Shinobi's API is all over the place - it happily returns OK for invalid requests
-        if verify_create:
-            if not self._wait_and_verify(email, True):
+        if verify:
+            if not wait_and_verify(lambda: self.get(email) is not None):
                 raise RuntimeError("Unable to verify created user")
 
         return ShinobiUserOrm._create_improved_user_entry(create_user["user"])
@@ -190,11 +189,11 @@ class ShinobiUserOrm:
             return None
         return rows_changed == 1
 
-    def delete(self, email: str, verify_delete: bool = True) -> bool:
+    def delete(self, email: str, verify: bool = True) -> bool:
         """
         Deletes the user with the given email address.
         :param email: email address of user
-        :param verify_delete: whether to wait to confirm that the user has been deleted
+        :param verify: whether to wait to confirm that the user has been deleted
         :return: `True` if the user has been deleted, else `False` if they haven't because they didn't exist
         """
         user = self.get(email)
@@ -212,28 +211,8 @@ class ShinobiUserOrm:
         response = requests.post(f"{self._base_url}/deleteAdmin", json=dict(account=account))
         raise_if_errors(response)
 
-        if verify_delete:
-            if not self._wait_and_verify(email, False):
+        if verify:
+            if not wait_and_verify(lambda: self.get(email) is None):
                 raise RuntimeError(f"User with email \"{email}\" was not deleted")
 
         return True
-
-    def _wait_and_verify(self, email: str, user_should_exist: bool, *, wait_iterations: int = 10,
-                         iteration_wait_in_milliseconds_multiplier: int = 100):
-        """
-        Wait to verify if the user with the given email address exists (if they should) or doesn't (if they shouldn't).
-        :param email: email of user to check
-        :param user_should_exist: whether the user should exist
-        :param wait_iterations: number of times to try if state not valid
-        :param iteration_wait_in_milliseconds_multiplier: waiting for `wait_iterations` * `iteration_wait_in_milliseconds_multiplier`
-                                                          between each iteration
-        :return: `True` if verified state matches desired, else `False`
-        """
-        for i in range(wait_iterations):
-            user = self.get(email)
-            if user and user_should_exist:
-                return True
-            elif not user and not user_should_exist:
-                return True
-            sleep(iteration_wait_in_milliseconds_multiplier * i)
-        return False

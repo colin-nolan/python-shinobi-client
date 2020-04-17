@@ -7,6 +7,7 @@
 - Details about a user can be queried without a super user token.
 - A user's API key can be attained without a super user token.
 - More specialised errors.
+- Change to name of verify flags on User ORM's create and delete methods to unify them.
 
 ### Added
 - Monitor ORM.

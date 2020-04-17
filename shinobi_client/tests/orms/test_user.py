@@ -1,7 +1,7 @@
 import unittest
 
 from shinobi_client.api_key import ShinobiApiKey
-from shinobi_client.orms.user import ShinobiUserOrm, ShinobiWrongPasswordError
+from shinobi_client.orms.user import ShinobiUserOrm, ShinobiWrongPasswordError, ShinobiUserAlreadyExistsError
 from shinobi_client.tests._common import _create_email_and_password, TestWithShinobi
 from shinobi_client._common import ShinobiSuperUserCredentialsRequiredError
 

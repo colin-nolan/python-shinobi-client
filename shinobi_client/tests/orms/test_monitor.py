@@ -81,8 +81,7 @@ class TestShinobiMonitorOrm(TestWithShinobi):
                 comparable_expected_configuration = filter(
                     lambda item: item[0] != key, ShinobiMonitorOrm.filter_only_supported_keys(
                         new_configuration).items())
-                comparable_actual_configuration = map(lambda item: (item[0], str(item[1])),
-                                                      filter(
+                comparable_actual_configuration = map(lambda item: (item[0], str(item[1])), filter(
                     lambda item: item[0] != key, ShinobiMonitorOrm.filter_only_supported_keys(modified_monitor).items()))
                 self.assertCountEqual(comparable_expected_configuration, comparable_actual_configuration)
 
