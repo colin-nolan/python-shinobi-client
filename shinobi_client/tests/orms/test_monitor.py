@@ -35,12 +35,12 @@ class TestShinobiMonitorOrm(TestWithShinobi):
 
     def test_get_all_when_no_monitors(self):
         monitors = self.monitor_orm.get_all()
-        self.assertEqual({}, monitors)
+        self.assertEqual(tuple(), monitors)
 
     def test_get_all_when_single_monitor(self):
         monitor_id = self._create_monitor()
         monitors = self.monitor_orm.get_all()
-        self.assertCountEqual((monitor_id, ), monitors.keys())
+        self.assertCountEqual((monitor_id, ), (monitor["mid"] for monitor in monitors))
 
     def test_get_all_when_multiple_monitors(self):
         monitor_ids = []
@@ -49,7 +49,7 @@ class TestShinobiMonitorOrm(TestWithShinobi):
             monitor_ids.append(monitor_id)
 
         monitors = self.monitor_orm.get_all()
-        self.assertCountEqual(monitor_ids, monitors.keys())
+        self.assertCountEqual(monitor_ids, (monitor["mid"] for monitor in monitors))
 
     def test_create(self):
         monitor_id = _create_monitor_id()
@@ -74,7 +74,7 @@ class TestShinobiMonitorOrm(TestWithShinobi):
         monitor_id = _create_monitor_id()
         user_1_orm.create(monitor_id, EXAMPLE_MONITOR_1_CONFIGURATION)
 
-        self.assertEqual({}, user_2_orm.get_all())
+        self.assertEqual(0, len(user_2_orm.get_all()))
 
     def test_modify_when_not_exist(self):
         monitor_id = _create_monitor_id()

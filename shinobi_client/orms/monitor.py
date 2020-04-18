@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, Optional, Set
+from typing import Dict, Optional, Set, Tuple
 
 import requests
 
@@ -100,10 +100,10 @@ class ShinobiMonitorOrm:
             return None
         return content
 
-    def get_all(self) -> Dict[str, Dict]:
+    def get_all(self) -> Tuple[Dict]:
         """
         Gets details about all monitors.
-        :return: dictionary of monitor information, indexed by monitor IDs
+        :return: monitors
         """
         response = requests.get(f"{self.base_url}/monitor/{self.group_key}")
         response.raise_for_status()
@@ -112,11 +112,11 @@ class ShinobiMonitorOrm:
         # Yes, the type of response weirdly changes depending on the number of monitors currently set...
         if isinstance(json_response, Dict):
             if len(json_response) == 0:
-                return {}
+                return tuple()
             else:
-                return {json_response["mid"]: json_response}
+                return (json_response, )
         else:
-            return {entry["mid"]: entry for entry in json_response}
+            return tuple(json_response)
 
     def create(self, monitor_id: str,  configuration: Dict, verify: bool = True) -> Dict:
         """
