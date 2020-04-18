@@ -107,7 +107,16 @@ class ShinobiMonitorOrm:
         """
         response = requests.get(f"{self.base_url}/monitor/{self.group_key}")
         response.raise_for_status()
-        return {entry["mid"]: entry for entry in response.json()}
+        json_response = response.json()
+
+        # Yes, the type of response weirdly changes depending on the number of monitors currently set...
+        if isinstance(json_response, Dict):
+            if len(json_response) == 0:
+                return {}
+            else:
+                return {json_response["mid"]: json_response}
+        else:
+            return {entry["mid"]: entry for entry in json_response}
 
     def create(self, monitor_id: str,  configuration: Dict, verify: bool = True) -> Dict:
         """
