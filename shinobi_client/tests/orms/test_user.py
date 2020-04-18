@@ -1,5 +1,6 @@
 import unittest
 
+from shinobi_client.shinobi_controller import start_shinobi
 from shinobi_client.api_key import ShinobiApiKey
 from shinobi_client.orms.user import ShinobiUserOrm, ShinobiWrongPasswordError, ShinobiUserAlreadyExistsError, \
     ShinobiUserDoesNotExistError
@@ -51,7 +52,22 @@ class TestShinobiUserOrm(TestWithShinobi):
         email, password = _create_email_and_password()
         self.assertRaises(ShinobiWrongPasswordError, self.superless_user_orm.get, email, password)
 
-    def test_get_all(self):
+    def test_get_all_when_no_users(self):
+        # Need to start clean installation to ensure no other users
+        with start_shinobi() as shinobi_client:
+            user_orm = ShinobiUserOrm(shinobi_client)
+            self.assertEqual((), user_orm.get_all())
+
+    def test_get_all_when_single_user(self):
+        # Need to start clean installation to ensure no other users
+        with start_shinobi() as shinobi_client:
+            user_orm = ShinobiUserOrm(shinobi_client)
+            user = user_orm.create(*_create_email_and_password())
+            users = user_orm.get_all()
+            self.assertEqual(1, len(users))
+            self.assertEqual(user["email"], users[0]["email"])
+
+    def test_get_all_when_multiple_users(self):
         emails = []
         for i in range(3):
             emails.append(self._create_user()["mail"])
