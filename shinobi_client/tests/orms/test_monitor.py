@@ -66,6 +66,16 @@ class TestShinobiMonitorOrm(TestWithShinobi):
         self.assertRaises(ShinobiMonitorAlreadyExistsError,
                           self.monitor_orm.create, monitor_id, EXAMPLE_MONITOR_1_CONFIGURATION)
 
+    def test_create_with_multiple_users(self):
+        user_1_orm = self.monitor_orm
+        user_2 = self._shinobi_client.user.create(*_create_email_and_password())
+        user_2_orm = ShinobiMonitorOrm(self._superless_shinobi_client, user_2["email"], user_2["password"])
+
+        monitor_id = _create_monitor_id()
+        user_1_orm.create(monitor_id, EXAMPLE_MONITOR_1_CONFIGURATION)
+
+        self.assertEqual({}, user_2_orm.get_all())
+
     def test_modify_when_not_exist(self):
         monitor_id = _create_monitor_id()
         self.assertRaises(ShinobiMonitorDoesNotExistError,
