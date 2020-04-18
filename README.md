@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.com/colin-nolan/python-shinobi-client.svg?branch=master)](https://travis-ci.com/colin-nolan/python-shinobi-client)
 [![Code Coverage](https://codecov.io/gh/colin-nolan/python-shinobi-client/branch/master/graph/badge.svg)](https://codecov.io/gh/colin-nolan/python-shinobi-client)
+[![PyPi](https://img.shields.io/pypi/dm/shinobi-client)](https://pypi.org/project/shinobi-client)
 
 # Shinobi Python Client
 _A Python client for controlling [Shinobi](https://gitlab.com/Shinobi-Systems/Shinobi) (an open-source video management 
