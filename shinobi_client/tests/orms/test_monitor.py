@@ -1,7 +1,7 @@
 import unittest
 from copy import deepcopy
-from uuid import uuid4
 
+from shinobi_client._common import generate_random_string
 from shinobi_client.orms.monitor import ShinobiMonitorOrm, ShinobiMonitorAlreadyExistsError, \
     ShinobiMonitorDoesNotExistError
 from shinobi_client.tests._common import TestWithShinobi, _create_email_and_password
@@ -16,7 +16,7 @@ def _create_monitor_id() -> str:
     Creates random monitor identifier.
     :return: created identifier
     """
-    return str(uuid4()).replace("-", "")
+    return generate_random_string()
 
 
 class TestShinobiMonitorOrm(TestWithShinobi):

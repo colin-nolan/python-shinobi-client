@@ -1,5 +1,7 @@
+import string
 from asyncio import sleep
 from typing import Callable
+import random
 
 from requests import Response
 
@@ -38,3 +40,13 @@ def wait_and_verify(verifier: Callable[[], bool], *, wait_iterations: int = 10,
             return True
         sleep(iteration_wait_in_milliseconds_multiplier * i)
     return False
+
+
+def generate_random_string(length: int = 8) -> str:
+    """
+    Generates a short random string.
+    :param length: length of generated string
+    :return: generated string
+    """
+    alphabet = string.ascii_lowercase
+    return "".join(random.choices(alphabet, k=length))

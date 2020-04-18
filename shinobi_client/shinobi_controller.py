@@ -1,4 +1,5 @@
 import os
+
 import shutil
 import subprocess
 from pathlib import Path
@@ -9,8 +10,8 @@ from typing import Callable, Optional, Dict
 import git
 import requests
 from get_port import find_free_port
-from uuid import uuid4
 
+from shinobi_client._common import generate_random_string
 from shinobi_client.client import ShinobiClient
 
 DEFAULT_DOCKER_SHINOBI_GIT_REPO_URL = "https://github.com/colin-nolan/docker-shinobi"
@@ -64,15 +65,19 @@ class ShinobiController:
 
     def __init__(self, docker_shinobi_git_repo_url: str = DEFAULT_DOCKER_SHINOBI_GIT_REPO_URL,
                  docker_shinobi_git_repo_branch: str = DEFAULT_DOCKER_SHINOBI_GIT_REPO_BRANCH,
-                 temp_root_location: str = "/tmp"):
+                 temp_root_location: str = "/tmp", name_prefix: str = None):
         """
         Constructor.
         :param docker_shinobi_git_repo_url: URL of the Git repository that
+        :param docker_shinobi_git_repo_branch: branch (or tag) in Git repository to checkout
         :param temp_root_location: location in which temp files are created (must be mountable using Docker)
+        :param name_prefix: TODO
         """
         self.temp_root_location = temp_root_location
         self.docker_shinobi_git_repo_url = docker_shinobi_git_repo_url
         self.docker_shinobi_git_repo_branch = docker_shinobi_git_repo_branch
+        self.name_prefix = name_prefix if name_prefix is not None else f"shinobi-{generate_random_string()}"
+
         self.__temp_directory: Optional[str] = None
         self._stop = None
 
@@ -95,11 +100,11 @@ class ShinobiController:
         environment = self._create_run_environment()
 
         self._stop = lambda: subprocess.check_output(
-            ["docker-compose", "down"],
+            ["docker-compose", "--project-name", self.name_prefix, "down"],
             cwd=self._shinobi_directory, env=environment)
 
         subprocess.check_output(
-            ["docker-compose", "up", "--build", "--detach", "--renew-anon-volumes"],
+            ["docker-compose", "--project-name", self.name_prefix, "up", "--build", "--detach", "--renew-anon-volumes"],
             cwd=self._shinobi_directory, env=environment)
         shinobi_client = ShinobiClient(
             super_user_email=environment["SHINOBI_SUPER_USER_EMAIL"],
@@ -143,11 +148,11 @@ class ShinobiController:
         return dict(
             **os.environ,
             SHINOBI_VIDEO_LOCATION=os.path.join(self._temp_directory, "videos"),
-            MYSQL_USER_PASSWORD=str(uuid4()),
-            MYSQL_ROOT_PASSWORD=str(uuid4()),
-            SHINOBI_SUPER_USER_EMAIL=str(uuid4()),
-            SHINOBI_SUPER_USER_PASSWORD=str(uuid4()),
-            SHINOBI_SUPER_USER_TOKEN=str(uuid4()),
+            MYSQL_USER_PASSWORD=generate_random_string(),
+            MYSQL_ROOT_PASSWORD=generate_random_string(),
+            SHINOBI_SUPER_USER_EMAIL=generate_random_string(),
+            SHINOBI_SUPER_USER_PASSWORD=generate_random_string(),
+            SHINOBI_SUPER_USER_TOKEN=generate_random_string(),
             SHINOBI_DATA_LOCATION=os.path.join(self._temp_directory, "data"),
             SHINOBI_TIMEZONE=timezone_file_location,
             SHINOBI_LOCALTIME=localtime_file_location,
