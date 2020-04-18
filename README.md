@@ -30,6 +30,8 @@ pip install shinobi-client[cli]
 ```
 
 ## Usage
+_Warning: methods are generally not thread safe._
+
 ### Python
 Start with creating the client for a particular Shinobi installation:
 ```python

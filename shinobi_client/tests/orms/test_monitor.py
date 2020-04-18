@@ -13,8 +13,8 @@ EXAMPLE_MONITOR_2_CONFIGURATION = get_monitor_configuration(2)
 
 def _create_monitor_id() -> str:
     """
-    TODO
-    :return:
+    Creates random monitor identifier.
+    :return: created identifier
     """
     return str(uuid4()).replace("-", "")
 

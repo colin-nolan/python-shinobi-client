@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, Optional, List, Set
+from typing import Dict, Optional, Set
 
 import requests
 
@@ -9,25 +9,16 @@ from shinobi_client._common import raise_if_errors, wait_and_verify
 
 @dataclass
 class ShinobiMonitorAlreadyExistsError(ValueError):
-    """
-    TODO
-    """
     monitor_id: str
 
 
 @dataclass
 class ShinobiMonitorDoesNotExistError(ValueError):
-    """
-    TODO
-    """
     monitor_id: str
 
 
 @dataclass
 class ShinobiUnsupportedKeysInConfigurationError(ValueError):
-    """
-    TODO
-    """
     unsupported_keys: Set[str]
 
 
@@ -35,8 +26,9 @@ class ShinobiMonitorOrm:
     """
     Shinobi monitor ORM.
 
-    Uses API:
-    https://shinobi.video/docs/api#content-add-edit-or-delete-a-monitor
+    Uses API: https://shinobi.video/docs/api#content-add-edit-or-delete-a-monitor
+
+    Not thread safe.
     """
     SUPPORTED_KEYS = {"name", "details", "type", "ext", "protocol", "host", "path", "port", "fps", "mode", "width",
                       "height"}
@@ -44,19 +36,20 @@ class ShinobiMonitorOrm:
     @staticmethod
     def filter_only_supported_keys(configuration: Dict) -> Dict:
         """
-        TODO
-        :param configuration:
-        :return:
+        Filter the given configuration to only the key/values pairs that can be set.
+        :param configuration: configuration to filter (not modified)
+        :return: filtered configuration
         """
         return dict(filter(lambda item: item[0] in ShinobiMonitorOrm.SUPPORTED_KEYS, configuration.items()))
 
     @staticmethod
     def is_configuration_equivalent(configuration_1: Dict, configuration_2: Dict) -> bool:
         """
-        TODO
-        :param configuration_1:
-        :param configuration_2:
-        :return:
+        Determines whether the given configurations are equivalent when considering only the key/values that can be set
+        and the value types that matter.
+        :param configuration_1: first configuration
+        :param configuration_2: second configuration
+        :return: `True` if the given configurations are equivalent
         """
         configurations = (configuration_1, configuration_2)
         comparable_configurations = []
@@ -70,10 +63,9 @@ class ShinobiMonitorOrm:
     @staticmethod
     def validate_configuration(configuration: Dict):
         """
-        TODO
-        :param configuration:
-        :return:
-        :raises ShinobiUnsupportedKeysInConfigurationError:
+        Validates that the configuration only contains supported keys.
+        :param configuration: the configuration to validate
+        :raises ShinobiUnsupportedKeysInConfigurationError: if the configuration contains supported keys
         """
         unsupported_keys = set(configuration.keys()) - ShinobiMonitorOrm.SUPPORTED_KEYS
         if len(unsupported_keys) > 0:
@@ -87,8 +79,8 @@ class ShinobiMonitorOrm:
         """
         Constructor.
         :param shinobi_client: client connected to Shinobi installation
-        :param email:
-        :param password:
+        :param email: email of user to setup monitors for
+        :param password: password of user to setup monitors for
         """
         self.shinobi_client = shinobi_client
         user = self.shinobi_client.user.get(email, password)
@@ -97,9 +89,9 @@ class ShinobiMonitorOrm:
 
     def get(self, monitor_id: str) -> Optional[Dict]:
         """
-        TODO
-        :param monitor_id:
-        :return:
+        Gets the monitor with the given ID.
+        :param monitor_id: ID of the monitor to get
+        :return: details about the monitor else `None` if not found
         """
         response = requests.get(f"{self.base_url}/monitor/{self.group_key}/{monitor_id}")
         response.raise_for_status()
@@ -110,8 +102,8 @@ class ShinobiMonitorOrm:
 
     def get_all(self) -> Dict[str, Dict]:
         """
-        TODO
-        :return:
+        Gets details about all monitors.
+        :return: dictionary of monitor information, indexed by monitor IDs
         """
         response = requests.get(f"{self.base_url}/monitor/{self.group_key}")
         response.raise_for_status()
@@ -119,12 +111,12 @@ class ShinobiMonitorOrm:
 
     def create(self, monitor_id: str,  configuration: Dict, verify: bool = True) -> Dict:
         """
-        TODO
-        :param monitor_id:
-        :param configuration:
-        :param verify:
-        :return:
-        :raises MonitorAlreadyExistsError:
+        Creates a monitor with the given ID and configuration.
+        :param monitor_id: ID of monitor
+        :param configuration: configuration of monitor
+        :param verify: wait and verify that the monitor has been created if `True`
+        :return: details about the created monitor
+        :raises MonitorAlreadyExistsError: raised if a monitor with the given ID already exists
         """
         if "-" in monitor_id:
             # Shinobi silently removes dashes so just making them illegal
@@ -153,27 +145,21 @@ class ShinobiMonitorOrm:
 
     def modify(self, monitor_id: str, configuration: Dict, verify: bool = True) -> bool:
         """
-        TODO
-
-        :param monitor_id:
-        :param configuration:
-        :param verify:
-        :return:
+        Modified a monitor with the given ID with the given configuration.
+        :param monitor_id: ID of the monitor
+        :param configuration: updated configuration of the monitor
+        :param verify: wait and verify that the monitor has been modified if `True`
+        :return: `True` if the monitor has been modified
+        :raises ShinobiMonitorDoesNotExistError: raised if a monitor with the given ID does not exist
         """
         ShinobiMonitorOrm.validate_configuration(configuration)
         current_configuration = self.get(monitor_id)
         if not current_configuration:
             raise ShinobiMonitorDoesNotExistError(monitor_id)
 
-        # comparable_input_configuration = set(map(lambda item: (item[0], str(item[1])), configuration.items()))
-        # comparable_current_configuration = set(
-        #     map(lambda item: (item[0], str(item[1])),
-        #         ShinobiMonitorOrm.filter_only_supported_keys(current_configuration).items()))
         if ShinobiMonitorOrm.is_configuration_equivalent(current_configuration, configuration):
             return False
 
-        # TODO: it's unclear whether the other things need to be set (else their value may be changed)?
-        # configuration = {**current_configuration, **configuration}
         self._configure(monitor_id, configuration)
 
         if verify and not wait_and_verify(lambda: ShinobiMonitorOrm.is_configuration_equivalent(
@@ -184,10 +170,12 @@ class ShinobiMonitorOrm:
 
     def delete(self, monitor_id: str, verify: bool = True) -> bool:
         """
-        TODO
-        :param monitor_id:
-        :param verify:
-        :return:
+        Deletes the monitor with the given ID.
+
+        NoOp if the monitor does not exist.
+        :param monitor_id: ID of the monitor
+        :param verify: wait and verify that the monitor has been deleted if `True`
+        :return: `True` if the monitor was deleted
         """
         # Note: if we don"t do this check, Shinobi errors (and the connection hangs) if asked to remove a non-existent
         #       monitor
@@ -203,10 +191,11 @@ class ShinobiMonitorOrm:
 
     def _configure(self, monitor_id: str, configuration: Dict):
         """
-        TODO
-        :param monitor_id:
-        :param configuration:
-        :return:
+        Configures the monitor with the given ID with the given configuration.
+
+        Will create the monitor if it does not exist.
+        :param monitor_id: ID of the monitor
+        :param configuration: configuration of the monitor
         """
         response = requests.post(f"{self.base_url}/configureMonitor/{self.group_key}/{monitor_id}",
                                  json=dict(data=configuration))

@@ -26,13 +26,12 @@ def raise_if_errors(shinobi_response: Response, raise_if_json_not_ok: bool = Tru
 def wait_and_verify(verifier: Callable[[], bool], *, wait_iterations: int = 10,
                     iteration_wait_in_milliseconds_multiplier: int = 100):
     """
-    Wait to verify if the user with the given email address exists (if they should) or doesn't (if they shouldn't).
-    :param email: email of user to check
-    :param user_should_exist: whether the user should exist
+    Wait to verify an event has happened.
+    :param verifier: callable that returns `True` if the event been waiting upon has been verified
     :param wait_iterations: number of times to try if state not valid
     :param iteration_wait_in_milliseconds_multiplier: waiting for `wait_iterations` * `iteration_wait_in_milliseconds_multiplier`
                                                       between each iteration
-    :return: `True` if verified state matches desired, else `False`
+    :return: `True` if the event has been verified, else `False`
     """
     for i in range(wait_iterations):
         if verifier():

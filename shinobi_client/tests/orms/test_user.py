@@ -1,7 +1,8 @@
 import unittest
 
 from shinobi_client.api_key import ShinobiApiKey
-from shinobi_client.orms.user import ShinobiUserOrm, ShinobiWrongPasswordError, ShinobiUserAlreadyExistsError
+from shinobi_client.orms.user import ShinobiUserOrm, ShinobiWrongPasswordError, ShinobiUserAlreadyExistsError, \
+    ShinobiUserDoesNotExistError
 from shinobi_client.tests._common import _create_email_and_password, TestWithShinobi
 from shinobi_client._common import ShinobiSuperUserCredentialsRequiredError
 
@@ -46,6 +47,10 @@ class TestShinobiUserOrm(TestWithShinobi):
         retrieved_user = self.superless_user_orm.get(user["email"], user["password"])
         self.assertEqual(user["mail"], retrieved_user["mail"])
 
+    def test_get_using_invalid_user_credentials(self):
+        email, password = _create_email_and_password()
+        self.assertRaises(ShinobiWrongPasswordError, self.superless_user_orm.get, email, password)
+
     def test_get_all(self):
         emails = []
         for i in range(3):
@@ -59,7 +64,7 @@ class TestShinobiUserOrm(TestWithShinobi):
 
     def test_modify_password_when_user_not_exist(self):
         email, password = _create_email_and_password()
-        self.assertRaises(ValueError, self.user_orm.modify, email, password=password)
+        self.assertRaises(ShinobiUserDoesNotExistError, self.user_orm.modify, email, password=password)
 
     def test_modify_password(self):
         user = self._create_user()

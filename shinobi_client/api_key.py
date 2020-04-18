@@ -6,6 +6,8 @@ from shinobi_client.client import ShinobiClient
 class ShinobiApiKey:
     """
     API key ORM.
+
+    Not thread safe.
     """
     def __init__(self, shinobi_client: ShinobiClient):
         """

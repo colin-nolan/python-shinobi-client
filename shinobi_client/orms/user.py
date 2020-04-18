@@ -2,11 +2,9 @@ import json
 from copy import deepcopy
 from dataclasses import dataclass
 
-from time import sleep
 from typing import Optional, Dict, Tuple
 
 import requests
-from logzero import logger
 
 from shinobi_client import ShinobiClient
 from shinobi_client._common import raise_if_errors, ShinobiSuperUserCredentialsRequiredError, wait_and_verify
@@ -14,27 +12,26 @@ from shinobi_client._common import raise_if_errors, ShinobiSuperUserCredentialsR
 
 @dataclass
 class ShinobiWrongPasswordError(ValueError):
-    """
-    TODO
-    """
     email: str
     password: str
 
 
 @dataclass
 class ShinobiUserAlreadyExistsError(ValueError):
-    """
-    TODO
-    """
+    email: str
+
+
+@dataclass
+class ShinobiUserDoesNotExistError(ValueError):
     email: str
 
 
 class ShinobiUserOrm:
     """
     Shinobi user ORM.
-    """
-    SUPPORTED_MODIFIABLE_PROPERTIES = {"password"}
 
+    Not thread safe.
+    """
     @staticmethod
     def _create_improved_user_entry(user: Dict) -> Dict:
         """
@@ -89,7 +86,7 @@ class ShinobiUserOrm:
         raise_if_errors(response, raise_if_json_not_ok=False)
 
         if not response.json()["ok"]:
-            # We can only assume this means that the password was incorrect...
+            # We can only assume this means that the password was incorrect/the user doesn't exist...
             raise ShinobiWrongPasswordError(email, password)
 
         user = response.json()["$user"]
@@ -155,39 +152,39 @@ class ShinobiUserOrm:
 
         return ShinobiUserOrm._create_improved_user_entry(create_user["user"])
 
-    def modify(self, email: str, **kwargs) -> Optional[bool]:
+    def modify(self, email: str, *, password: str) -> bool:
         """
         Modify a user.
-        :param email: the email address of the user to modify.
-        :param kwargs: new property values (currently supported: `password`).
-        :return: whether the user was modified or `None` if not able to confirm
+        :param email: the email address of the user to modify
+        :param password: new password
+        :return: whether the user was modified
         """
-        unsupported_properties = set(kwargs.keys()) - {"mail"} - self.__class__.SUPPORTED_MODIFIABLE_PROPERTIES
-        if len(unsupported_properties) > 0:
-            raise NotImplementedError(f"Cannot modify user properties: {unsupported_properties}")
+        try:
+            user = self.get(email, password)
+            # The user can't be none as otherwise their credentials shouldn't have worked at getting the user's details
+            assert user is not None
+            return False
+        except ShinobiWrongPasswordError:
+            pass
 
-        existing_user = self.get(email)
-        if existing_user is None:
-            raise ValueError(f"Cannot modify user as they do not exist: {email}")
+        user = self.get(email)
+        if user is None:
+            raise ShinobiUserDoesNotExistError(email)
 
         data = {
             "mail": email,
-            "pass": kwargs["password"],
-            "password_again": kwargs["password"],
+            "pass": password,
+            "password_again": password,
         }
         account = {
             "mail": email,
-            "uid": existing_user["uid"],
-            "ke": existing_user["ke"]
+            "uid": user["uid"],
+            "ke": user["ke"]
         }
         response = requests.post(f"{self._base_url}/editAdmin", json=dict(data=data, account=account))
         raise_if_errors(response)
 
-        rows_changed = response.json().get("rowsChanged")
-        if rows_changed is None:
-            logger.info("Shinobi did not return information on whether the user has been changed")
-            return None
-        return rows_changed == 1
+        return True
 
     def delete(self, email: str, verify: bool = True) -> bool:
         """

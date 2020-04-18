@@ -4,7 +4,9 @@ from dataclasses import dataclass
 @dataclass
 class ShinobiClient:
     """
-    Model of Shinobi installation.
+    Shinobi client.
+
+    Not thread safe.
     """
     host: str
     port: str
@@ -27,11 +29,5 @@ class ShinobiClient:
         return ShinobiApiKey(self)
 
     def monitor(self, email: str, password: str) -> "ShinobiMonitor":
-        """
-        TODO
-        :param email:
-        :param password:
-        :return:
-        """
         from shinobi_client.orms.monitor import ShinobiMonitorOrm
         return ShinobiMonitorOrm(self, email, password)
