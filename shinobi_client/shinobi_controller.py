@@ -172,6 +172,6 @@ def start_shinobi(*args, **kwargs) -> ShinobiController:
     ```
     :param args: positional arguments to pass to `ShinobiController.__init__`
     :param kwargs: key word arguments to pass to `ShinobiController.__init__`
-    :return: created Shinboi controller
+    :return: created Shinobi controller
     """
     return ShinobiController(*args, **kwargs)

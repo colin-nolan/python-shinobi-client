@@ -14,7 +14,7 @@ class TestShinobiApiKey(TestWithShinobi):
         self.api_key = ShinobiApiKey(self._superless_shinobi_client)
 
     def test_get_for_non_existent_user(self):
-        self.assertRaises(RuntimeError, self.api_key.get, "does_not@exist", "password")
+        self.assertRaises(ShinobiWrongPasswordError, self.api_key.get, "does_not@exist", "password")
 
     def test_get_with_wrong_password(self):
         user = self._create_user()
