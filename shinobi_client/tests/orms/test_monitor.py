@@ -42,6 +42,11 @@ class TestShinobiMonitorOrm(TestWithShinobi):
         monitors = self.monitor_orm.get_all()
         self.assertCountEqual(monitor_ids, monitors.keys())
 
+    def test_get_all_when_single_monitor(self):
+        monitor_id = self._create_monitor()
+        monitors = self.monitor_orm.get_all()
+        self.assertCountEqual((monitor_id, ), monitors.keys())
+
     def test_create(self):
         monitor_id = _create_monitor_id()
         created_monitor = self.monitor_orm.create(monitor_id, EXAMPLE_MONITOR_1_CONFIGURATION)
