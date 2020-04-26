@@ -1,5 +1,5 @@
 # Change Log
-## [Unreleased]
+## 3.0.0
 ### Added
 - Ability to get the user account that an instantiated `ShinobiMonitorOrm` uses.
 - Missing imports to root `__init__.py` module.
