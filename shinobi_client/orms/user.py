@@ -45,6 +45,8 @@ class ShinobiUserOrm:
         if "pass" in user:
             assert "password" not in user
             user["password"] = user["pass"]
+        if "ok" in user:
+            del user["ok"]
         return user
 
     @property

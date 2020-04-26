@@ -26,8 +26,8 @@ class TestShinobiMonitorOrm(TestWithShinobi):
     def setUp(self):
         super().setUp()
         email, password = _create_email_and_password()
-        self._shinobi_client.user.create(email, password)
-        self.monitor_orm = ShinobiMonitorOrm(self._superless_shinobi_client, email, password)
+        self.user = self.shinobi_client.user.create(email, password)
+        self.monitor_orm = ShinobiMonitorOrm(self.superless_shinobi_client, email, password)
 
     def test_get_when_does_not_exist(self):
         monitor_id = _create_monitor_id()
@@ -69,8 +69,8 @@ class TestShinobiMonitorOrm(TestWithShinobi):
 
     def test_create_with_multiple_users(self):
         user_1_orm = self.monitor_orm
-        user_2 = self._shinobi_client.user.create(*_create_email_and_password())
-        user_2_orm = ShinobiMonitorOrm(self._superless_shinobi_client, user_2["email"], user_2["password"])
+        user_2 = self.shinobi_client.user.create(*_create_email_and_password())
+        user_2_orm = ShinobiMonitorOrm(self.superless_shinobi_client, user_2["email"], user_2["password"])
 
         monitor_id = _create_monitor_id()
         user_1_orm.create(monitor_id, EXAMPLE_MONITOR_1_CONFIGURATION)
@@ -119,6 +119,9 @@ class TestShinobiMonitorOrm(TestWithShinobi):
         monitor_id = self._create_monitor()
         self.assertTrue(self.monitor_orm.delete(monitor_id))
         self.assertIsNone(self.monitor_orm.get(monitor_id))
+
+    def test_get_user(self):
+        self.assertEqual(self.user["email"], self.monitor_orm.user["email"])
 
     def _create_monitor(self):
         monitor_id = _create_monitor_id()

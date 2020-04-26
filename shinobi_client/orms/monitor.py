@@ -82,13 +82,17 @@ class ShinobiMonitorOrm:
         monitor = deepcopy(monitor)
         assert "id" not in monitor
         monitor["id"] = monitor["mid"]
-        assert "configuration" not in monitor
-        monitor["configuration"] = monitor["details"]
+        if "ok" in monitor:
+            del monitor["ok"]
         return monitor
 
     @property
     def base_url(self) -> str:
         return f"http://{self.shinobi_client.host}:{self.shinobi_client.port}/{self.api_key}"
+
+    @property
+    def user(self) -> Dict:
+        return deepcopy(self._user)
 
     def __init__(self, shinobi_client: ShinobiClient, email: str, password: str):
         """
@@ -99,9 +103,9 @@ class ShinobiMonitorOrm:
         :raises ShinobiWrongPasswordError: if the email and password given is incorrect
         """
         self.shinobi_client = shinobi_client
-        user = self.shinobi_client.user.get(email, password)
-        self.api_key = user["auth_token"]
-        self.group_key = user["ke"]
+        self._user = self.shinobi_client.user.get(email, password)
+        self.api_key = self._user["auth_token"]
+        self.group_key = self._user["ke"]
 
     def get(self, monitor_id: str) -> Optional[Dict]:
         """

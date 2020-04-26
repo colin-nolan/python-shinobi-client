@@ -39,8 +39,8 @@ class TestWithShinobi(unittest.TestCase, metaclass=ABCMeta):
 
     def setUp(self):
         super().setUp()
-        self._shinobi_client: ShinobiClient = self.__class__._shinobi_client_singleton
-        self._superless_shinobi_client = ShinobiClient(self._shinobi_client.host, self._shinobi_client.port)
+        self.shinobi_client: ShinobiClient = self.__class__._shinobi_client_singleton
+        self.superless_shinobi_client = ShinobiClient(self.shinobi_client.host, self.shinobi_client.port)
 
     def _create_user(self) -> Dict:
         """
@@ -48,4 +48,4 @@ class TestWithShinobi(unittest.TestCase, metaclass=ABCMeta):
         :return: model of the created user
         """
         email, password = _create_email_and_password()
-        return self._shinobi_client.user.create(email, password)
+        return self.shinobi_client.user.create(email, password)

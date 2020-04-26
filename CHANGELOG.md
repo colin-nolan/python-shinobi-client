@@ -1,4 +1,13 @@
 # Change Log
+## [Unreleased]
+### Added
+- Ability to get the user account that an instantiated `ShinobiMonitorOrm` uses.
+- Missing imports to root `__init__.py` module.
+
+### Removed
+- Configuration duplication in improved monitor data.
+- `ok` from returned data.
+
 ## 2.0.1
 ### Added
 - Improved fields in monitor data.
