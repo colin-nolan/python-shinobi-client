@@ -127,7 +127,7 @@ python -m unittest discover -v -s shinobi/tests
 
 
 ## Legal
-[AGPL v3.0](LICENSE.txt). Copyright 2020 Colin Nolan.
+[GPL v3.0](LICENSE.txt). Copyright 2020 Colin Nolan.
 
 I am not affiliated to the development of Shinobi project in any way. This work is in no way related to the company that
 I work for.

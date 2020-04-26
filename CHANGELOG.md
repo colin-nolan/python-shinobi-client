@@ -1,7 +1,8 @@
 # Change Log
-## [Unreleased]
+## 2.0.1
 ### Added
 - Improved fields in monitor data.
+- GPLv3 licence.
 
 ## 2.0.0
 ### Changed
