@@ -1,4 +1,8 @@
 # Change Log
+## [Unreleased]
+### Added
+- Improved fields in monitor data.
+
 ## 2.0.0
 ### Changed
 - A super user token is no longer required to instantiate a `ShinobiClient`. A

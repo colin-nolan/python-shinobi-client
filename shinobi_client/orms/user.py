@@ -40,8 +40,10 @@ class ShinobiUserOrm:
         :return: improved user details
         """
         user = deepcopy(user)
+        assert "email" not in "mail"
         user["email"] = user["mail"]
         if "pass" in user:
+            assert "password" not in user
             user["password"] = user["pass"]
         return user
 

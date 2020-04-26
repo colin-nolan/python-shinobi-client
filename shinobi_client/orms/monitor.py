@@ -1,3 +1,4 @@
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Dict, Optional, Set, Tuple
 
@@ -71,6 +72,20 @@ class ShinobiMonitorOrm:
         if len(unsupported_keys) > 0:
             raise ShinobiUnsupportedKeysInConfigurationError(unsupported_keys)
 
+    @staticmethod
+    def _create_improved_monitor_entry(monitor: Dict) -> Dict:
+        """
+        Creates a copy of the given monitor details with extra information.
+        :param monitor: monitor details to improve
+        :return: improved monitor details
+        """
+        monitor = deepcopy(monitor)
+        assert "id" not in monitor
+        monitor["id"] = monitor["mid"]
+        assert "configuration" not in monitor
+        monitor["configuration"] = monitor["details"]
+        return monitor
+
     @property
     def base_url(self) -> str:
         return f"http://{self.shinobi_client.host}:{self.shinobi_client.port}/{self.api_key}"
@@ -81,6 +96,7 @@ class ShinobiMonitorOrm:
         :param shinobi_client: client connected to Shinobi installation
         :param email: email of user to setup monitors for
         :param password: password of user to setup monitors for
+        :raises ShinobiWrongPasswordError: if the email and password given is incorrect
         """
         self.shinobi_client = shinobi_client
         user = self.shinobi_client.user.get(email, password)
@@ -98,7 +114,7 @@ class ShinobiMonitorOrm:
         content = response.json()
         if not content:
             return None
-        return content
+        return ShinobiMonitorOrm._create_improved_monitor_entry(content)
 
     def get_all(self) -> Tuple[Dict]:
         """
@@ -114,9 +130,9 @@ class ShinobiMonitorOrm:
             if len(json_response) == 0:
                 return tuple()
             else:
-                return (json_response, )
+                return (ShinobiMonitorOrm._create_improved_monitor_entry(json_response), )
         else:
-            return tuple(json_response)
+            return tuple(ShinobiMonitorOrm._create_improved_monitor_entry(entry) for entry in json_response)
 
     def create(self, monitor_id: str,  configuration: Dict, verify: bool = True) -> Dict:
         """

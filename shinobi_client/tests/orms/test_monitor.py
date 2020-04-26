@@ -58,6 +58,7 @@ class TestShinobiMonitorOrm(TestWithShinobi):
         self.assertEqual(int(EXAMPLE_MONITOR_1_CONFIGURATION["port"]), int(created_monitor["port"]))
 
         retrieved = self.monitor_orm.get(monitor_id)
+        self.assertEqual(monitor_id, retrieved["id"])
         self.assertEqual(monitor_id, retrieved["mid"])
         self.assertEqual(EXAMPLE_MONITOR_1_CONFIGURATION["details"], retrieved["details"])
 
