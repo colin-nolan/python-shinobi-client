@@ -1,5 +1,5 @@
 # Change Log
-## [Unreleased]
+## 3.0.1
 ### Added
 - More checks to detect invalid monitor configuration, which can lead to internal errors in Shinobi.
 
