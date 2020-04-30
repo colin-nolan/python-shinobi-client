@@ -46,22 +46,29 @@ class ShinobiMonitorOrm:
         return dict(filter(lambda item: item[0] in ShinobiMonitorOrm.SUPPORTED_KEYS, configuration.items()))
 
     @staticmethod
-    def is_configuration_equivalent(configuration_1: Dict, configuration_2: Dict) -> bool:
+    def would_configuration_change(configuration: Dict, existing_configuration: Dict) -> bool:
         """
-        Determines whether the given configurations are equivalent when considering only the key/values that can be set
-        and the value types that matter.
-        :param configuration_1: first configuration
-        :param configuration_2: second configuration
-        :return: `True` if the given configurations are equivalent
+        Determines whether the existing configuration would change if Shinobi is given the new configuration.
+        :param configuration: new configuration
+        :param existing_configuration: existing configuration
+        :return: `True` if the existing configuration would change
         """
-        configurations = (configuration_1, configuration_2)
-        comparable_configurations = []
-        for configuration in configurations:
-            comparable_configurations.append(
-                set(map(lambda item: (item[0], str(item[1])),
-                        ShinobiMonitorOrm.filter_only_supported_keys(configuration).items())))
-        assert len(comparable_configurations) == 2
-        return comparable_configurations[0] == comparable_configurations[1]
+        new_keys = set(configuration.keys()) - set(existing_configuration.keys())
+        if len(new_keys) > 0:
+            return True
+        for key, value in configuration.items():
+            if key == "details":
+                break
+            if str(existing_configuration[key]) != str(value):
+                return True
+
+        if "details" not in configuration:
+            return False
+
+        # Note: details that are missing with either take default values or will not change
+        configuration_details = json.loads(configuration["details"])
+        existing_configuration_details = json.loads(existing_configuration["details"])
+        return ShinobiMonitorOrm.would_configuration_change(configuration_details, existing_configuration_details)
 
     @staticmethod
     def validate_configuration(configuration: Dict):
@@ -166,6 +173,8 @@ class ShinobiMonitorOrm:
                 raise ValueError(f"Configuration \"details\" is not a valid JSON object: {configuration['details']}")
             if not isinstance(loaded_details, dict):
                 raise ValueError(f"Configuration \"details\" is not a valid JSON object: {loaded_details}")
+
+        configuration = ShinobiMonitorOrm.filter_only_supported_keys(configuration)
         ShinobiMonitorOrm.validate_configuration(configuration)
         if self.get(monitor_id):
             raise ShinobiMonitorAlreadyExistsError(monitor_id)
@@ -197,18 +206,19 @@ class ShinobiMonitorOrm:
         :return: `True` if the monitor has been modified
         :raises ShinobiMonitorDoesNotExistError: raised if a monitor with the given ID does not exist
         """
+        configuration = ShinobiMonitorOrm.filter_only_supported_keys(configuration)
         ShinobiMonitorOrm.validate_configuration(configuration)
         current_configuration = self.get(monitor_id)
         if not current_configuration:
             raise ShinobiMonitorDoesNotExistError(monitor_id)
 
-        if ShinobiMonitorOrm.is_configuration_equivalent(current_configuration, configuration):
+        if not ShinobiMonitorOrm.would_configuration_change(configuration, current_configuration):
             return False
 
         self._configure(monitor_id, configuration)
 
-        if verify and not wait_and_verify(lambda: ShinobiMonitorOrm.is_configuration_equivalent(
-                self.get(monitor_id), configuration)):
+        if verify and not wait_and_verify(lambda: not ShinobiMonitorOrm.would_configuration_change(
+                configuration, self.get(monitor_id))):
             raise RuntimeError(f"Could not change configuration of monitor \"{monitor_id}\" to: {configuration}")
 
         return True

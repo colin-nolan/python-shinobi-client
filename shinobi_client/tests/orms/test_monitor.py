@@ -137,6 +137,14 @@ class TestShinobiMonitorOrm(TestWithShinobi):
         modified = self.monitor_orm.modify(monitor_id, EXAMPLE_MONITOR_1_CONFIGURATION)
         self.assertFalse(modified)
 
+    def test_modify_to_subset(self):
+        monitor_id = _create_monitor_id()
+        created = self.monitor_orm.create(monitor_id, EXAMPLE_MONITOR_1_CONFIGURATION)
+        modified = self.monitor_orm.modify(
+            monitor_id, {"name": EXAMPLE_MONITOR_1_CONFIGURATION["name"], "details": "{}"})
+        self.assertFalse(modified)
+        self.assertEqual(created, self.monitor_orm.get(monitor_id))
+
     def test_delete_when_not_exists(self):
         monitor_id = _create_monitor_id()
         self.assertFalse(self.monitor_orm.delete(monitor_id))
