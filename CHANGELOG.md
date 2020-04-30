@@ -1,5 +1,5 @@
 # Change Log
-## [Unreleased]
+## 3.0.2
 ### Changed
 - Aligned detection of modified monitor configuration closer to Shinobi's behaviour. 
 
