@@ -1,4 +1,8 @@
 # Change Log
+## [Unreleased]
+### Added
+- More checks to detect invalid monitor configuration, which can lead to internal errors in Shinobi.
+
 ## 3.0.0
 ### Added
 - Ability to get the user account that an instantiated `ShinobiMonitorOrm` uses.

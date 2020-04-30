@@ -62,10 +62,15 @@ class TestShinobiMonitorOrm(TestWithShinobi):
         self.assertEqual(monitor_id, retrieved["mid"])
         self.assertEqual(EXAMPLE_MONITOR_1_CONFIGURATION["details"], retrieved["details"])
 
-    def test_create_when_already_exists(self):
-        monitor_id = self._create_monitor()
-        self.assertRaises(ShinobiMonitorAlreadyExistsError,
-                          self.monitor_orm.create, monitor_id, EXAMPLE_MONITOR_1_CONFIGURATION)
+    def test_create_with_minimal_config(self):
+        monitor_id = _create_monitor_id()
+        configuration = {"name": EXAMPLE_MONITOR_1_CONFIGURATION["name"], "details": "{}"}
+        self.monitor_orm.create(monitor_id, configuration)
+
+        retrieved = self.monitor_orm.get(monitor_id)
+        print(retrieved)
+        self.assertEqual(EXAMPLE_MONITOR_1_CONFIGURATION["name"], retrieved["name"])
+        self.assertEqual("{}", retrieved["details"])
 
     def test_create_with_multiple_users(self):
         user_1_orm = self.monitor_orm
@@ -76,6 +81,27 @@ class TestShinobiMonitorOrm(TestWithShinobi):
         user_1_orm.create(monitor_id, EXAMPLE_MONITOR_1_CONFIGURATION)
 
         self.assertEqual(0, len(user_2_orm.get_all()))
+
+    def test_create_with_no_details(self):
+        configuration = {"name": "example"}
+        self.assertRaises(ValueError, self.monitor_orm.create, _create_monitor_id(), configuration)
+
+    def test_create_with_details_not_json(self):
+        configuration = {"name": "example", "details": ""}
+        self.assertRaises(ValueError, self.monitor_orm.create, _create_monitor_id(), configuration)
+
+    def test_create_with_details_not_json_object(self):
+        configuration = {"name": "example", "details": "false"}
+        self.assertRaises(ValueError, self.monitor_orm.create, _create_monitor_id(), configuration)
+
+    def test_create_with_no_name(self):
+        configuration = {"details": "{}"}
+        self.assertRaises(ValueError, self.monitor_orm.create, _create_monitor_id(), configuration)
+
+    def test_create_when_already_exists(self):
+        monitor_id = self._create_monitor()
+        self.assertRaises(ShinobiMonitorAlreadyExistsError,
+                          self.monitor_orm.create, monitor_id, EXAMPLE_MONITOR_1_CONFIGURATION)
 
     def test_modify_when_not_exist(self):
         monitor_id = _create_monitor_id()

@@ -12,9 +12,9 @@ EXAMPLE_MONITOR_LOCATIONS = {
 
 def get_monitor_configuration(example_monitor_id: int = 1) -> Dict:
     """
-    TODO
-    :param example_monitor_id:
-    :return:
+    Gets the example monitor configuration with the given ID (or first monitor if no ID is given).
+    :param example_monitor_id: ID of monitor to load
+    :return: loaded monitor
     """
     return json.load(open(EXAMPLE_MONITOR_LOCATIONS[example_monitor_id], "r"))
 

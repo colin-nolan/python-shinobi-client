@@ -1,5 +1,7 @@
+import json
 from copy import deepcopy
 from dataclasses import dataclass
+from json import JSONDecodeError
 from typing import Dict, Optional, Set, Tuple
 
 import requests
@@ -150,6 +152,20 @@ class ShinobiMonitorOrm:
         if "-" in monitor_id:
             # Shinobi silently removes dashes so just making them illegal
             raise ValueError("\"monitor_id\" cannot contain \"-\"")
+        if "name" not in configuration:
+            # Shinobi returns `{'ok': False}` (2XX), with no information if the name is omitted
+            raise ValueError(f"\"name\" is not in the configuration: {configuration}")
+        if "details" not in configuration:
+            # Shinobi errors if the "details" field is omitted
+            raise ValueError(f"\"details\" is not in the configuration: {configuration}")
+        else:
+            # Shinobi errors if the "details" are not JSON
+            try:
+                loaded_details = json.loads(configuration["details"])
+            except JSONDecodeError:
+                raise ValueError(f"Configuration \"details\" is not a valid JSON object: {configuration['details']}")
+            if not isinstance(loaded_details, dict):
+                raise ValueError(f"Configuration \"details\" is not a valid JSON object: {loaded_details}")
         ShinobiMonitorOrm.validate_configuration(configuration)
         if self.get(monitor_id):
             raise ShinobiMonitorAlreadyExistsError(monitor_id)

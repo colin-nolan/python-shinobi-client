@@ -22,7 +22,8 @@ def raise_if_errors(shinobi_response: Response, raise_if_json_not_ok: bool = Tru
     json_response = shinobi_response.json()
     if raise_if_json_not_ok and not json_response["ok"]:
         # Yes, the API returns a 2XX when everything is not ok...
-        raise RuntimeError(json_response["msg"])
+        message = json_response.get("msg", json_response)
+        raise RuntimeError(message)
 
 
 def wait_and_verify(verifier: Callable[[], bool], *, wait_iterations: int = 10,
