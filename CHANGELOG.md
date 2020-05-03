@@ -1,5 +1,5 @@
 # Change Log
-## [Unreleased]
+## 3.0.3
 ### Changed
 - Shinobi controller removes all temp directories.
 
