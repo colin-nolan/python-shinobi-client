@@ -219,7 +219,8 @@ class ShinobiMonitorOrm:
 
         if verify and not wait_and_verify(lambda: not ShinobiMonitorOrm.would_configuration_change(
                 configuration, self.get(monitor_id))):
-            raise RuntimeError(f"Could not change configuration of monitor \"{monitor_id}\" to: {configuration}")
+            raise RuntimeError(f"Could not change configuration of monitor \"{monitor_id}\". "
+                                   f"Got {self.get(monitor_id)} expected {configuration}")
 
         return True
 

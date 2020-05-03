@@ -1,5 +1,6 @@
 import os
 
+import docker
 import shutil
 import subprocess
 from pathlib import Path
@@ -126,7 +127,13 @@ class ShinobiController:
         if not self._stop:
             return False
         self._stop()
+
+        # As the temp directory is written to as root in the containers, it needs to be removed as root
+        client = docker.from_env()
+        client.containers.run("alpine", "rm -rf /data/*", auto_remove=True,
+                              volumes={self._temp_directory: {"bind": "/data", "mode": "rw"}})
         shutil.rmtree(self._temp_directory, ignore_errors=True)
+
         self._stop = None
         return True
 
