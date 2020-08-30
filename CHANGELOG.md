@@ -1,4 +1,8 @@
 # Change Log
+## 3.1.0
+### Added
+- Monitor details can now be passed in as a dictionary, in addition to a JSON dumped string.
+
 ## 3.0.3
 ### Changed
 - Shinobi controller removes all temp directories.
