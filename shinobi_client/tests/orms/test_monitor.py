@@ -1,3 +1,5 @@
+import json
+
 import unittest
 from copy import deepcopy
 
@@ -9,6 +11,7 @@ from shinobi_client.tests.resources.metadata import get_monitor_configuration
 
 EXAMPLE_MONITOR_1_CONFIGURATION = get_monitor_configuration(1)
 EXAMPLE_MONITOR_2_CONFIGURATION = get_monitor_configuration(2)
+EXAMPLE_MONITOR_3_CONFIGURATION = get_monitor_configuration(3)
 
 
 def _create_monitor_id() -> str:
@@ -51,6 +54,16 @@ class TestShinobiMonitorOrm(TestWithShinobi):
         monitors = self.monitor_orm.get_all()
         self.assertCountEqual(monitor_ids, (monitor["mid"] for monitor in monitors))
 
+    def test_create_with_minimal_config(self):
+        monitor_id = _create_monitor_id()
+        configuration = {"name": EXAMPLE_MONITOR_1_CONFIGURATION["name"], "details": "{}"}
+        self.monitor_orm.create(monitor_id, configuration)
+
+        retrieved = self.monitor_orm.get(monitor_id)
+        print(retrieved)
+        self.assertEqual(EXAMPLE_MONITOR_1_CONFIGURATION["name"], retrieved["name"])
+        self.assertEqual("{}", retrieved["details"])
+
     def test_create(self):
         monitor_id = _create_monitor_id()
         created_monitor = self.monitor_orm.create(monitor_id, EXAMPLE_MONITOR_1_CONFIGURATION)
@@ -62,15 +75,11 @@ class TestShinobiMonitorOrm(TestWithShinobi):
         self.assertEqual(monitor_id, retrieved["mid"])
         self.assertEqual(EXAMPLE_MONITOR_1_CONFIGURATION["details"], retrieved["details"])
 
-    def test_create_with_minimal_config(self):
+    def test_create_with_json_details(self):
         monitor_id = _create_monitor_id()
-        configuration = {"name": EXAMPLE_MONITOR_1_CONFIGURATION["name"], "details": "{}"}
-        self.monitor_orm.create(monitor_id, configuration)
-
+        self.monitor_orm.create(monitor_id, EXAMPLE_MONITOR_3_CONFIGURATION)
         retrieved = self.monitor_orm.get(monitor_id)
-        print(retrieved)
-        self.assertEqual(EXAMPLE_MONITOR_1_CONFIGURATION["name"], retrieved["name"])
-        self.assertEqual("{}", retrieved["details"])
+        self.assertEqual(EXAMPLE_MONITOR_3_CONFIGURATION["details"], json.loads(retrieved["details"]))
 
     def test_create_with_multiple_users(self):
         user_1_orm = self.monitor_orm
