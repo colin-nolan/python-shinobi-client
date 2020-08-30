@@ -114,6 +114,8 @@ class ShinobiMonitorOrm:
         monitor["id"] = monitor["mid"]
         if "ok" in monitor:
             del monitor["ok"]
+        # Shinobi UI returns JSON but the API returns a string - parsing JSON string
+        monitor["details"] = ShinobiMonitorOrm._parse_details(monitor["details"])
         return monitor
 
     @staticmethod
