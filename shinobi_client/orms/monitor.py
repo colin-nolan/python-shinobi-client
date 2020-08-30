@@ -20,8 +20,15 @@ class ShinobiMonitorDoesNotExistError(ValueError):
     monitor_id: str
 
 
+class InvalidConfigurationError(ValueError):
+    def __init__(self, error_message: str, configuration: Dict):
+        super().__init__(error_message)
+        self.error_message = error_message
+        self.configuration = configuration
+
+
 @dataclass
-class ShinobiUnsupportedKeysInConfigurationError(ValueError):
+class ShinobiUnsupportedKeysInConfigurationError(InvalidConfigurationError):
     unsupported_keys: Set[str]
 
 
@@ -75,8 +82,22 @@ class ShinobiMonitorOrm:
         """
         Validates that the configuration only contains supported keys.
         :param configuration: the configuration to validate
-        :raises ShinobiUnsupportedKeysInConfigurationError: if the configuration contains supported keys
+        :raises InvalidConfigurationError: if the configuration is deemed invalid
         """
+        if "name" not in configuration:
+            # Shinobi returns `{'ok': False}` (2XX), with no information if the name is omitted
+            raise InvalidConfigurationError("\"name\" is not in the configuration", configuration)
+        if "details" not in configuration:
+            # Shinobi errors if the "details" field is omitted
+            raise InvalidConfigurationError(f"\"details\" is not in the configuration", configuration)
+        else:
+            # "details" must be JSON
+            try:
+                ShinobiMonitorOrm._parse_details(configuration["details"])
+            except (JSONDecodeError, ValueError) as e:
+                raise InvalidConfigurationError(
+                    "Configuration \"details\" was invalid: {configuration['details']}", configuration) from e
+
         unsupported_keys = set(configuration.keys()) - ShinobiMonitorOrm.SUPPORTED_KEYS
         if len(unsupported_keys) > 0:
             raise ShinobiUnsupportedKeysInConfigurationError(unsupported_keys)
@@ -103,6 +124,8 @@ class ShinobiMonitorOrm:
         :return: parsed details (may not be a copy)
         :raises ValueError: if the parsed details are not a dictionary
         """
+        # Note: in older versions of Shinobi the details were stored in a JSON dumped string.
+        #       Newer config is in JSON.
         parsed_details = json.loads(details) if isinstance(details, str) else details
         if not isinstance(parsed_details, dict):
             raise ValueError(f"Details is not a valid JSON object: {parsed_details}")
@@ -172,18 +195,6 @@ class ShinobiMonitorOrm:
         if "-" in monitor_id:
             # Shinobi silently removes dashes so just making them illegal
             raise ValueError("\"monitor_id\" cannot contain \"-\"")
-        if "name" not in configuration:
-            # Shinobi returns `{'ok': False}` (2XX), with no information if the name is omitted
-            raise ValueError(f"\"name\" is not in the configuration: {configuration}")
-        if "details" not in configuration:
-            # Shinobi errors if the "details" field is omitted
-            raise ValueError(f"\"details\" is not in the configuration: {configuration}")
-        else:
-            # Shinobi errors if the "details" are not JSON
-            try:
-                ShinobiMonitorOrm._parse_details(configuration["details"])
-            except (JSONDecodeError, ValueError) as e:
-                raise ValueError(f"Configuration \"details\" was invalid: {configuration['details']}") from e
 
         configuration = ShinobiMonitorOrm.filter_only_supported_keys(configuration)
         ShinobiMonitorOrm.validate_configuration(configuration)
@@ -264,6 +275,8 @@ class ShinobiMonitorOrm:
         :param monitor_id: ID of the monitor
         :param configuration: configuration of the monitor
         """
+        # Note: Shinobi used to represent "details" as a JSON dumped string but not needs to be JSON
+        configuration["details"] = ShinobiMonitorOrm._parse_details(configuration["details"])
         response = requests.post(f"{self.base_url}/configureMonitor/{self.group_key}/{monitor_id}",
                                  json=dict(data=configuration))
         raise_if_errors(response)
