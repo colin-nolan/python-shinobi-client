@@ -2,7 +2,7 @@ import json
 from copy import deepcopy
 from dataclasses import dataclass
 from json import JSONDecodeError
-from typing import Dict, Optional, Set, Tuple
+from typing import Dict, Optional, Set, Tuple, Union
 
 import requests
 
@@ -66,8 +66,8 @@ class ShinobiMonitorOrm:
             return False
 
         # Note: details that are missing with either take default values or will not change
-        configuration_details = json.loads(configuration["details"])
-        existing_configuration_details = json.loads(existing_configuration["details"])
+        configuration_details = ShinobiMonitorOrm._parse_details(configuration["details"])
+        existing_configuration_details = ShinobiMonitorOrm._parse_details(existing_configuration["details"])
         return ShinobiMonitorOrm.would_configuration_change(configuration_details, existing_configuration_details)
 
     @staticmethod
@@ -94,6 +94,19 @@ class ShinobiMonitorOrm:
         if "ok" in monitor:
             del monitor["ok"]
         return monitor
+
+    @staticmethod
+    def _parse_details(details: Union[Dict, str]) -> Dict:
+        """
+        Parses the details out of the given details.
+        :param details: representation of configuration details
+        :return: parsed details (may not be a copy)
+        :raises ValueError: if the parsed details are not a dictionary
+        """
+        parsed_details = json.loads(details) if isinstance(details, str) else details
+        if not isinstance(parsed_details, dict):
+            raise ValueError(f"Details is not a valid JSON object: {parsed_details}")
+        return parsed_details
 
     @property
     def base_url(self) -> str:
@@ -168,11 +181,9 @@ class ShinobiMonitorOrm:
         else:
             # Shinobi errors if the "details" are not JSON
             try:
-                loaded_details = json.loads(configuration["details"])
-            except JSONDecodeError:
-                raise ValueError(f"Configuration \"details\" is not a valid JSON object: {configuration['details']}")
-            if not isinstance(loaded_details, dict):
-                raise ValueError(f"Configuration \"details\" is not a valid JSON object: {loaded_details}")
+                ShinobiMonitorOrm._parse_details(configuration["details"])
+            except (JSONDecodeError, ValueError) as e:
+                raise ValueError(f"Configuration \"details\" was invalid: {configuration['details']}") from e
 
         configuration = ShinobiMonitorOrm.filter_only_supported_keys(configuration)
         ShinobiMonitorOrm.validate_configuration(configuration)
@@ -220,7 +231,7 @@ class ShinobiMonitorOrm:
         if verify and not wait_and_verify(lambda: not ShinobiMonitorOrm.would_configuration_change(
                 configuration, self.get(monitor_id))):
             raise RuntimeError(f"Could not change configuration of monitor \"{monitor_id}\". "
-                                   f"Got {self.get(monitor_id)} expected {configuration}")
+                               f"Got {self.get(monitor_id)} expected {configuration}")
 
         return True
 

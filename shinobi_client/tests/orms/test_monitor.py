@@ -1,3 +1,5 @@
+import json
+
 import unittest
 from copy import deepcopy
 
@@ -77,7 +79,7 @@ class TestShinobiMonitorOrm(TestWithShinobi):
         monitor_id = _create_monitor_id()
         self.monitor_orm.create(monitor_id, EXAMPLE_MONITOR_3_CONFIGURATION)
         retrieved = self.monitor_orm.get(monitor_id)
-        self.assertEqual(EXAMPLE_MONITOR_3_CONFIGURATION["details"], retrieved["details"])
+        self.assertEqual(EXAMPLE_MONITOR_3_CONFIGURATION["details"], json.loads(retrieved["details"]))
 
     def test_create_with_multiple_users(self):
         user_1_orm = self.monitor_orm
