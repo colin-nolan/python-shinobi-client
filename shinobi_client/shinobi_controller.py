@@ -112,7 +112,7 @@ class ShinobiController:
             super_user_password=environment["SHINOBI_SUPER_USER_PASSWORD"],
             super_user_token=environment["SHINOBI_SUPER_USER_TOKEN"],
             port=environment["SHINOBI_HOST_PORT"],
-            # XXX: hardcoding assumption that the Docker daemon is on the host
+            # XXX: hardcoded assumption that the Docker daemon is on the host
             host="0.0.0.0"
         )
         ShinobiController._wait_for_start(shinobi_client)
@@ -152,15 +152,21 @@ class ShinobiController:
         if port_find_error:
             raise RuntimeError(f"Error finding free port: {port_find_error}")
 
+        # Docker Compose seems to no longer like mount directories that don't already exist so making sure they do
+        shinobi_video_location = os.path.join(self._temp_directory, "videos")
+        shinobi_data_location = os.path.join(self._temp_directory, "data")
+        os.makedirs(shinobi_video_location, exist_ok=True)
+        os.makedirs(shinobi_data_location, exist_ok=True)
+
         return dict(
             **os.environ,
-            SHINOBI_VIDEO_LOCATION=os.path.join(self._temp_directory, "videos"),
+            SHINOBI_VIDEO_LOCATION=shinobi_video_location,
             MYSQL_USER_PASSWORD=generate_random_string(),
             MYSQL_ROOT_PASSWORD=generate_random_string(),
             SHINOBI_SUPER_USER_EMAIL=generate_random_string(),
             SHINOBI_SUPER_USER_PASSWORD=generate_random_string(),
             SHINOBI_SUPER_USER_TOKEN=generate_random_string(),
-            SHINOBI_DATA_LOCATION=os.path.join(self._temp_directory, "data"),
+            SHINOBI_DATA_LOCATION=shinobi_data_location,
             SHINOBI_TIMEZONE=timezone_file_location,
             SHINOBI_LOCALTIME=localtime_file_location,
             SHINOBI_HOST_PORT=str(port)
