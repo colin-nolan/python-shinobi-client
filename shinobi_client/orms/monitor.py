@@ -163,6 +163,14 @@ class ShinobiMonitorOrm:
         response = requests.get(f"{self.base_url}/monitor/{self.group_key}/{monitor_id}")
         response.raise_for_status()
         content = response.json()
+        if isinstance(content, list):
+            # Newer versions of Shinobi return a list (even though a single ID was given!)
+            if len(content) == 0:
+                content = None
+            elif len(content) == 1:
+                content = content[0]
+            else:
+                raise AssertionError(f"Request for single monitor returned more than one: {content}")
         if not content:
             return None
         return ShinobiMonitorOrm._create_improved_monitor_entry(content)
