@@ -277,7 +277,7 @@ class ShinobiMonitorOrm:
         :param monitor_id: ID of the monitor
         :param configuration: configuration of the monitor
         """
-        # Note: Shinobi used to represent "details" as a JSON dumped string but not needs to be JSON
+        # Note: Shinobi used to represent "details" as a JSON dumped string but now needs to be JSON
         configuration["details"] = ShinobiMonitorOrm._parse_details(configuration["details"])
         response = requests.post(f"{self.base_url}/configureMonitor/{self.group_key}/{monitor_id}",
                                  json=dict(data=configuration))

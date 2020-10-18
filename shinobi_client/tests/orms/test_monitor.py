@@ -60,9 +60,8 @@ class TestShinobiMonitorOrm(TestWithShinobi):
         self.monitor_orm.create(monitor_id, configuration)
 
         retrieved = self.monitor_orm.get(monitor_id)
-        print(retrieved)
         self.assertEqual(EXAMPLE_MONITOR_1_CONFIGURATION["name"], retrieved["name"])
-        self.assertEqual("{}", retrieved["details"])
+        self.assertEqual({}, retrieved["details"])
 
     def test_create(self):
         monitor_id = _create_monitor_id()
@@ -79,7 +78,7 @@ class TestShinobiMonitorOrm(TestWithShinobi):
         monitor_id = _create_monitor_id()
         self.monitor_orm.create(monitor_id, EXAMPLE_MONITOR_3_CONFIGURATION)
         retrieved = self.monitor_orm.get(monitor_id)
-        self.assertEqual(EXAMPLE_MONITOR_3_CONFIGURATION["details"], json.loads(retrieved["details"]))
+        self.assertEqual(EXAMPLE_MONITOR_3_CONFIGURATION["details"], retrieved["details"])
 
     def test_create_with_multiple_users(self):
         user_1_orm = self.monitor_orm
@@ -131,13 +130,13 @@ class TestShinobiMonitorOrm(TestWithShinobi):
                 self.assertTrue(modified)
 
                 modified_monitor = self.monitor_orm.get(monitor_id)
-                self.assertEqual(new_configuration[key], str(modified_monitor[key]))
+                self.assertEqual(new_configuration[key], modified_monitor[key])
 
-                comparable_expected_configuration = filter(
+                comparable_expected_configuration = dict(filter(
                     lambda item: item[0] != key, ShinobiMonitorOrm.filter_only_supported_keys(
-                        new_configuration).items())
-                comparable_actual_configuration = map(lambda item: (item[0], str(item[1])), filter(
-                    lambda item: item[0] != key, ShinobiMonitorOrm.filter_only_supported_keys(modified_monitor).items()))
+                        new_configuration).items()))
+                comparable_actual_configuration = dict(map(lambda item: (item[0], item[1]), filter(
+                    lambda item: item[0] != key, ShinobiMonitorOrm.filter_only_supported_keys(modified_monitor).items())))
                 self.assertCountEqual(comparable_expected_configuration, comparable_actual_configuration)
 
     def test_modify_to_same(self):
