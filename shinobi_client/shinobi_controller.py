@@ -130,7 +130,7 @@ class ShinobiController:
 
         # As the temp directory is written to as root in the containers, it needs to be removed as root
         client = docker.from_env()
-        client.containers.run("alpine", "rm -rf /data/*", auto_remove=True,
+        client.containers.run("alpine", "rm -rf /data/*", remove=True,
                               volumes={self._temp_directory: {"bind": "/data", "mode": "rw"}})
         shutil.rmtree(self._temp_directory, ignore_errors=True)
 
